@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gomoku Online</title>
+  <style>
+      /* Giữ nguyên CSS như cũ */
+      body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          margin: 0;
+          background: #f0f2f5;
+      }
+
+      .container {
+          text-align: center;
+          background: white;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+
+      #gameBoard {
+          display: grid;
+          grid-template-columns: repeat(15, 40px);
+          grid-template-rows: repeat(15, 40px);
+          gap: 1px;
+          background: #deb887;
+          padding: 10px;
+          margin: 20px auto;
+      }
+
+      .cell {
+          width: 40px;
+          height: 40px;
+          background: #f5deb3;
+          border: 1px solid #8b4513;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          font-weight: bold;
+      }
+
+      .cell:hover {
+          background: #f0e68c;
+      }
+
+      .game-info {
+          margin: 20px 0;
+          padding: 10px;
+          background: #f8f9fa;
+          border-radius: 5px;
+      }
+
+      .btn {
+          padding: 10px 20px;
+          margin: 5px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-weight: bold;
+          transition: background 0.3s;
+      }
+
+      .btn-primary {
+          background: #007bff;
+          color: white;
+      }
+
+      .btn-primary:hover {
+          background: #0056b3;
+      }
+
+      #gameId {
+          padding: 10px;
+          margin: 5px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+      }
+
+      .hidden {
+          display: none;
+      }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Gomoku Online</h1>
+
+  <div id="menuScreen">
+    <button id="createGame" class="btn btn-primary">Create Game</button>
+    <div>
+      <input type="text" id="gameId" placeholder="Enter Game ID">
+      <button id="joinGame" class="btn btn-primary">Join Game</button>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="hidden">
+    <div class="game-info">
+      <div id="gameIdDisplay"></div>
+      <div id="playerInfo"></div>
+      <div id="currentTurn"></div>
+    </div>
+
+    <div id="gameBoard"></div>
+
+    <button id="newGame" class="btn btn-primary hidden">New Game</button>
+  </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
+    import {
+        getFirestore,
+        collection,
+        doc,
+        setDoc,
+        getDoc,
+        onSnapshot
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDynAI_d34bY2J2TpiXi-cFJu-yQjBXWwU",
+        authDomain: "caro-firebase.firebaseapp.com",
+        projectId: "caro-firebase",
+        storageBucket: "caro-firebase.firebasestorage.app",
+        messagingSenderId: "357402393311",
+        appId: "1:357402393311:web:5185772e05c641c5ef876a",
+        measurementId: "G-5CE4HQQKD3"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    // Game Constants
+    const BOARD_SIZE = 15;
+
+    // Game state using flat array for Firestore compatibility
+    let gameState = {
+        board: Array(BOARD_SIZE * BOARD_SIZE).fill(''),
+        currentPlayer: 'X',
+        gameId: null,
+        status: 'waiting',
+        mySymbol: null
+    };
+
+    // DOM elements
+    const gameBoard = document.getElementById('gameBoard');
+    const menuScreen = document.getElementById('menuScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const createGameBtn = document.getElementById('createGame');
+    const joinGameBtn = document.getElementById('joinGame');
+    const gameIdInput = document.getElementById('gameId');
+    const gameIdDisplay = document.getElementById('gameIdDisplay');
+    const playerInfo = document.getElementById('playerInfo');
+    const currentTurn = document.getElementById('currentTurn');
+    const newGameBtn = document.getElementById('newGame');
+
+    // Helper function to convert 2D position to 1D index
+    function getIndex(row, col) {
+        return row * BOARD_SIZE + col;
+    }
+
+    // Initialize board
+    function initializeBoard() {
+        gameBoard.innerHTML = '';
+        for(let i = 0; i < BOARD_SIZE; i++) {
+            for(let j = 0; j < BOARD_SIZE; j++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.row = i;
+                cell.dataset.col = j;
+                cell.addEventListener('click', handleCellClick);
+                gameBoard.appendChild(cell);
+            }
+        }
+    }
+
+    // Create new game
+    createGameBtn.addEventListener('click', async () => {
+        try {
+            const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            gameState.gameId = gameId;
+            gameState.mySymbol = 'X';
+
+            await setDoc(doc(db, 'games', gameId), {
+                board: Array(BOARD_SIZE * BOARD_SIZE).fill(''),
+                currentPlayer: 'X',
+                status: 'waiting',
+                timestamp: Date.now()
+            });
+
+            console.log('Game created with ID:', gameId);
+            startGame();
+        } catch (error) {
+            console.error("Error creating game:", error);
+            alert('Error creating game. Please try again.');
+        }
+    });
+
+    // Join existing game
+    joinGameBtn.addEventListener('click', async () => {
+        try {
+            const gameId = gameIdInput.value.toUpperCase();
+            const gameRef = doc(db, 'games', gameId);
+            const gameDoc = await getDoc(gameRef);
+
+            if(gameDoc.exists() && gameDoc.data().status === 'waiting') {
+                gameState.gameId = gameId;
+                gameState.mySymbol = 'O';
+
+                await setDoc(gameRef, {
+                    ...gameDoc.data(),
+                    status: 'playing'
+                });
+
+                console.log('Joined game:', gameId);
+                startGame();
+            } else {
+                alert('Invalid game or game already in progress');
+            }
+        } catch (error) {
+            console.error("Error joining game:", error);
+            alert('Error joining game. Please try again.');
+        }
+    });
+
+    // Start game
+    function startGame() {
+        menuScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        gameIdDisplay.textContent = `Game ID: ${gameState.gameId}`;
+        playerInfo.textContent = `You are playing as: ${gameState.mySymbol}`;
+        initializeBoard();
+
+        // Listen for game updates
+        onSnapshot(doc(db, 'games', gameState.gameId), (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                gameState.board = data.board;
+                gameState.currentPlayer = data.currentPlayer;
+                gameState.status = data.status;
+                updateBoard();
+                updateGameInfo();
+            }
+        });
+    }
+
+    // Handle cell click
+    async function handleCellClick(e) {
+        if(gameState.status !== 'playing' || gameState.currentPlayer !== gameState.mySymbol) return;
+
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+        const index = getIndex(row, col);
+
+        if(gameState.board[index]) return;
+
+        try {
+            const newBoard = [...gameState.board];
+            newBoard[index] = gameState.mySymbol;
+
+            const newStatus = checkWinner(newBoard, row, col) ? 'finished' : 'playing';
+
+            await setDoc(doc(db, 'games', gameState.gameId), {
+                board: newBoard,
+                currentPlayer: gameState.mySymbol === 'X' ? 'O' : 'X',
+                status: newStatus,
+                lastMove: {row, col, player: gameState.mySymbol}
+            }, { merge: true });
+
+        } catch (error) {
+            console.error("Error updating game:", error);
+            alert('Error updating game. Please try again.');
+        }
+    }
+
+    // Update board display
+    function updateBoard() {
+        const cells = gameBoard.getElementsByClassName('cell');
+        for(let i = 0; i < cells.length; i++) {
+            cells[i].textContent = gameState.board[i];
+        }
+    }
+
+    // Update game info display
+    function updateGameInfo() {
+        if(gameState.status === 'finished') {
+            const winner = gameState.currentPlayer === 'X' ? 'O' : 'X';
+            currentTurn.textContent = winner === gameState.mySymbol ?
+                'Game Over! You Win!' : 'Game Over! You Lose!';
+            newGameBtn.classList.remove('hidden');
+        } else {
+            currentTurn.textContent = gameState.currentPlayer === gameState.mySymbol ?
+                'Your turn' : "Opponent's turn";
+        }
+    }
+
+    // Check for winner
+    function checkWinner(board, row, col) {
+        const directions = [
+            [0, 1], [1, 0], [1, 1], [1, -1]
+        ];
+
+        const index = getIndex(row, col);
+        const symbol = board[index];
+
+        for(const [dx, dy] of directions) {
+            let count = 1;
+
+            // Check forward
+            for(let i = 1; i < 5; i++) {
+                const newRow = row + dx * i;
+                const newCol = col + dy * i;
+                if(!isValidPosition(newRow, newCol)) break;
+                if(board[getIndex(newRow, newCol)] !== symbol) break;
+                count++;
+            }
+
+            // Check backward
+            for(let i = 1; i < 5; i++) {
+                const newRow = row - dx * i;
+                const newCol = col - dy * i;
+                if(!isValidPosition(newRow, newCol)) break;
+                if(board[getIndex(newRow, newCol)] !== symbol) break;
+                count++;
+            }
+
+            if(count >= 5) return true;
+        }
+        return false;
+    }
+
+    function isValidPosition(row, col) {
+        return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+    }
+
+    // New game button handler
+    newGameBtn.addEventListener('click', () => {
+        window.location.reload();
+    });
+
+    // Initialize the game board
+    initializeBoard();
+
+    // Log để kiểm tra kết nối
+    console.log('Firebase initialized');
+    try {
+        const testDoc = await setDoc(doc(db, 'test', 'connection'), {
+            timestamp: Date.now()
+        });
+        console.log('Firebase connection test successful');
+    } catch (error) {
+        console.error('Firebase connection test failed:', error);
+    }
+</script>
+</body>
+</html>
