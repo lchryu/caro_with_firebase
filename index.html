@@ -1,365 +1,625 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Gomoku Online</title>
-  <style>
-      /* Giữ nguyên CSS như cũ */
-      body {
-          font-family: Arial, sans-serif;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-          margin: 0;
-          background: #f0f2f5;
-      }
+    <title>Gomoku Online</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f2f5;
+        }
 
-      .container {
-          text-align: center;
-          background: white;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
 
-      #gameBoard {
-          display: grid;
-          grid-template-columns: repeat(15, 40px);
-          grid-template-rows: repeat(15, 40px);
-          gap: 1px;
-          background: #deb887;
-          padding: 10px;
-          margin: 20px auto;
-      }
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(19, 35px);
+            grid-template-rows: repeat(17, 35px);
+            gap: 1px;
+            background: #deb887;
+            padding: 10px;
+            margin: 20px auto;
+        }
 
-      .cell {
-          width: 40px;
-          height: 40px;
-          background: #f5deb3;
-          border: 1px solid #8b4513;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 24px;
-          font-weight: bold;
-      }
+        .cell {
+            width: 35px;
+            height: 35px;
+            background: #f5deb3;
+            border: 1px solid #8b4513;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            position: relative;
+        }
 
-      .cell:hover {
-          background: #f0e68c;
-      }
+        .cell.player1::after {
+            content: 'X';
+            position: absolute;
+            font-size: 20px;
+            color: blue;
+            opacity: 1;
+            background: none;
+            width: auto;
+            height: auto;
+        }
 
-      .game-info {
-          margin: 20px 0;
-          padding: 10px;
-          background: #f8f9fa;
-          border-radius: 5px;
-      }
+        .cell.player2::after {
+            content: 'O';
+            position: absolute;
+            font-size: 20px;
+            color: red;
+            opacity: 1;
+            background: none;
+            width: auto;
+            height: auto;
+        }
 
-      .btn {
-          padding: 10px 20px;
-          margin: 5px;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          font-weight: bold;
-          transition: background 0.3s;
-      }
+        .cell span {
+            opacity: 0.3;
+        }
 
-      .btn-primary {
-          background: #007bff;
-          color: white;
-      }
+        .cell.center {
+            background: #e9ecef;
+        }
 
-      .btn-primary:hover {
-          background: #0056b3;
-      }
+        .cell.center.disabled {
+            background: #808080;
+            cursor: not-allowed;
+        }
 
-      #gameId {
-          padding: 10px;
-          margin: 5px;
-          border: 1px solid #ccc;
-          border-radius: 5px;
-      }
+        .cell:not(.disabled):hover {
+            background: #f0e68c;
+        }
 
-      .hidden {
-          display: none;
-      }
-  </style>
+        .game-info {
+            margin: 20px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 10px 0;
+        }
+
+        .controls {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-control {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .btn-control:hover:not(:disabled) {
+            background: #f0f0f0;
+        }
+
+        .btn-control:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background: #28a745;
+            color: white;
+            border: none;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-reset {
+            background: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .btn-reset:hover {
+            background: #c82333;
+        }
+
+        #gameId {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-  <h1>Gomoku Online</h1>
+    <div class="container">
+        <h1>Gomoku Online</h1>
+        
+        <div id="menuScreen">
+            <button id="createGame" class="btn btn-primary">Create Game</button>
+            <div>
+                <input type="text" id="gameId" placeholder="Enter Game ID">
+                <button id="joinGame" class="btn btn-primary">Join Game</button>
+            </div>
+        </div>
 
-  <div id="menuScreen">
-    <button id="createGame" class="btn btn-primary">Create Game</button>
-    <div>
-      <input type="text" id="gameId" placeholder="Enter Game ID">
-      <button id="joinGame" class="btn btn-primary">Join Game</button>
+        <div id="gameScreen" class="hidden">
+            <div class="game-info">
+                <div id="gameIdDisplay"></div>
+                <div id="playerInfo"></div>
+                <div id="currentTurn"></div>
+                <div class="timer">
+                    Thời gian: <span id="timeDisplay">60</span>s
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="centerToggle" class="btn-control">Tắt ô giữa</button>
+                <button id="startGame" class="btn-control btn-start">Bắt đầu</button>
+                <button id="resetGame" class="btn-control btn-reset">Reset</button>
+            </div>
+            
+            <div id="gameBoard"></div>
+        </div>
     </div>
-  </div>
-
-  <div id="gameScreen" class="hidden">
-    <div class="game-info">
-      <div id="gameIdDisplay"></div>
-      <div id="playerInfo"></div>
-      <div id="currentTurn"></div>
-    </div>
-
-    <div id="gameBoard"></div>
-
-    <button id="newGame" class="btn btn-primary hidden">New Game</button>
-  </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
-    import {
-        getFirestore,
-        collection,
-        doc,
-        setDoc,
-        getDoc,
-        onSnapshot
-    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyDynAI_d34bY2J2TpiXi-cFJu-yQjBXWwU",
-        authDomain: "caro-firebase.firebaseapp.com",
-        projectId: "caro-firebase",
-        storageBucket: "caro-firebase.firebasestorage.app",
-        messagingSenderId: "357402393311",
-        appId: "1:357402393311:web:5185772e05c641c5ef876a",
-        measurementId: "G-5CE4HQQKD3"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
-
-    // Game Constants
-    const BOARD_SIZE = 15;
-
-    // Game state using flat array for Firestore compatibility
-    let gameState = {
-        board: Array(BOARD_SIZE * BOARD_SIZE).fill(''),
-        currentPlayer: 'X',
-        gameId: null,
-        status: 'waiting',
-        mySymbol: null
-    };
-
-    // DOM elements
-    const gameBoard = document.getElementById('gameBoard');
-    const menuScreen = document.getElementById('menuScreen');
-    const gameScreen = document.getElementById('gameScreen');
-    const createGameBtn = document.getElementById('createGame');
-    const joinGameBtn = document.getElementById('joinGame');
-    const gameIdInput = document.getElementById('gameId');
-    const gameIdDisplay = document.getElementById('gameIdDisplay');
-    const playerInfo = document.getElementById('playerInfo');
-    const currentTurn = document.getElementById('currentTurn');
-    const newGameBtn = document.getElementById('newGame');
-
-    // Helper function to convert 2D position to 1D index
-    function getIndex(row, col) {
-        return row * BOARD_SIZE + col;
-    }
-
-    // Initialize board
-    function initializeBoard() {
-        gameBoard.innerHTML = '';
-        for(let i = 0; i < BOARD_SIZE; i++) {
-            for(let j = 0; j < BOARD_SIZE; j++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.dataset.row = i;
-                cell.dataset.col = j;
-                cell.addEventListener('click', handleCellClick);
-                gameBoard.appendChild(cell);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyDynAI_d34bY2J2TpiXi-cFJu-yQjBXWwU",
+            authDomain: "caro-firebase.firebaseapp.com",
+            projectId: "caro-firebase",
+            storageBucket: "caro-firebase.firebasestorage.app",
+            messagingSenderId: "357402393311",
+            appId: "1:357402393311:web:5185772e05c641c5ef876a",
+            measurementId: "G-5CE4HQQKD3"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+    
+        // Game Constants
+        const BOARD_ROWS = 17;
+        const BOARD_COLS = 19;
+        const CENTER_ROW = Math.floor(BOARD_ROWS / 2);
+        const CENTER_COL = Math.floor(BOARD_COLS / 2);
+        const TIMER_DURATION = 60;
+        
+        // Game state
+        let gameState = {
+            board: Array(BOARD_ROWS * BOARD_COLS).fill(''),
+            currentPlayer: '1',
+            gameId: null,
+            status: 'waiting',
+            mySymbol: null,
+            centerEnabled: true,
+            timeRemaining: TIMER_DURATION,
+            timerInterval: null,
+            isTimerRunning: false
+        };
+    
+        // DOM elements
+        const gameBoard = document.getElementById('gameBoard');
+        const menuScreen = document.getElementById('menuScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const createGameBtn = document.getElementById('createGame');
+        const joinGameBtn = document.getElementById('joinGame');
+        const gameIdInput = document.getElementById('gameId');
+        const gameIdDisplay = document.getElementById('gameIdDisplay');
+        const playerInfo = document.getElementById('playerInfo');
+        const currentTurn = document.getElementById('currentTurn');
+        const centerToggle = document.getElementById('centerToggle');
+        const startGameBtn = document.getElementById('startGame');
+        const resetGameBtn = document.getElementById('resetGame');
+        const timeDisplay = document.getElementById('timeDisplay');
+    
+        function startTimer() {
+            // Clear any existing timer
+            stopTimer();
+    
+            // Reset time to initial duration
+            gameState.timeRemaining = TIMER_DURATION;
+            gameState.isTimerRunning = true;
+            updateTimeDisplay();
+    
+            // Start countdown
+            gameState.timerInterval = setInterval(() => {
+                if (gameState.timeRemaining > 0) {
+                    gameState.timeRemaining--;
+                    updateTimeDisplay();
+                    
+                    // Sync time with Firebase
+                    setDoc(doc(db, 'games', gameState.gameId), {
+                        timeRemaining: gameState.timeRemaining
+                    }, { merge: true });
+    
+                    // Handle timeout
+                    if (gameState.timeRemaining === 0) {
+                        stopTimer();
+                        handleTimeout();
+                    }
+                }
+            }, 1000);
+        }
+    
+        function stopTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+                gameState.isTimerRunning = false;
             }
         }
-    }
-
-    // Create new game
-    createGameBtn.addEventListener('click', async () => {
-        try {
-            const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
-            gameState.gameId = gameId;
-            gameState.mySymbol = 'X';
-
-            await setDoc(doc(db, 'games', gameId), {
-                board: Array(BOARD_SIZE * BOARD_SIZE).fill(''),
-                currentPlayer: 'X',
-                status: 'waiting',
-                timestamp: Date.now()
-            });
-
-            console.log('Game created with ID:', gameId);
-            startGame();
-        } catch (error) {
-            console.error("Error creating game:", error);
-            alert('Error creating game. Please try again.');
+    
+        function updateTimeDisplay() {
+            timeDisplay.textContent = gameState.timeRemaining;
         }
-    });
-
-    // Join existing game
-    joinGameBtn.addEventListener('click', async () => {
-        try {
-            const gameId = gameIdInput.value.toUpperCase();
-            const gameRef = doc(db, 'games', gameId);
-            const gameDoc = await getDoc(gameRef);
-
-            if(gameDoc.exists() && gameDoc.data().status === 'waiting') {
+    
+        function calculateCellNumber(row, col) {
+            return row * 20 + col + 1;
+        }
+    
+        function isCenterCell(row, col) {
+            return row === CENTER_ROW && col === CENTER_COL;
+        }
+    
+        function initializeBoard() {
+            gameBoard.innerHTML = '';
+            for(let row = 0; row < BOARD_ROWS; row++) {
+                for(let col = 0; col < BOARD_COLS; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    
+                    const span = document.createElement('span');
+                    span.textContent = calculateCellNumber(row, col);
+                    cell.appendChild(span);
+                    
+                    if (isCenterCell(row, col)) {
+                        cell.classList.add('center');
+                        if (!gameState.centerEnabled) {
+                            cell.classList.add('disabled');
+                        }
+                    }
+                    
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('click', handleCellClick);
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+    
+        async function handleCellClick(e) {
+            if(gameState.status !== 'playing' || gameState.currentPlayer !== gameState.mySymbol) return;
+    
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+    
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            if (isCenterCell(row, col) && !gameState.centerEnabled) return;
+            
+            const index = row * BOARD_COLS + col;
+            if(gameState.board[index]) return;
+    
+            try {
+                stopTimer();
+    
+                const newBoard = [...gameState.board];
+                newBoard[index] = gameState.mySymbol;
+    
+                const newStatus = checkWinner(newBoard, row, col) ? 'finished' : 'playing';
+    
+                await setDoc(doc(db, 'games', gameState.gameId), {
+                    board: newBoard,
+                    currentPlayer: gameState.mySymbol === '1' ? '2' : '1',
+                    status: newStatus,
+                    lastMove: {row, col, player: gameState.mySymbol},
+                    timeRemaining: TIMER_DURATION
+                }, { merge: true });
+    
+            } catch (error) {
+                console.error("Error updating game:", error);
+                alert('Error updating game. Please try again.');
+            }
+        }
+    
+        function updateBoard() {
+            for(let row = 0; row < BOARD_ROWS; row++) {
+                for(let col = 0; col < BOARD_COLS; col++) {
+                    const index = row * BOARD_COLS + col;
+                    const cell = document.querySelector(
+                        `[data-row="${row}"][data-col="${col}"]`
+                    );
+                    
+                    if (cell) {
+                        const value = gameState.board[index];
+                        cell.classList.remove('player1', 'player2');
+                        if (value) {
+                            cell.classList.add(`player${value}`);
+                        }
+                        
+                        if (isCenterCell(row, col)) {
+                            if (gameState.centerEnabled) {
+                                cell.classList.remove('disabled');
+                            } else {
+                                cell.classList.add('disabled');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        createGameBtn.addEventListener('click', async () => {
+            try {
+                const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
                 gameState.gameId = gameId;
-                gameState.mySymbol = 'O';
-
-                await setDoc(gameRef, {
-                    ...gameDoc.data(),
-                    status: 'playing'
+                gameState.mySymbol = '1';
+                
+                await setDoc(doc(db, 'games', gameId), {
+                    board: Array(BOARD_ROWS * BOARD_COLS).fill(''),
+                    currentPlayer: '1',
+                    status: 'waiting',
+                    centerEnabled: true,
+                    timeRemaining: TIMER_DURATION,
+                    timestamp: Date.now()
                 });
-
-                console.log('Joined game:', gameId);
+    
                 startGame();
-            } else {
-                alert('Invalid game or game already in progress');
+            } catch (error) {
+                console.error("Error creating game:", error);
+                alert('Error creating game. Please try again.');
             }
-        } catch (error) {
-            console.error("Error joining game:", error);
-            alert('Error joining game. Please try again.');
+        });
+    
+        joinGameBtn.addEventListener('click', async () => {
+            try {
+                const gameId = gameIdInput.value.toUpperCase();
+                const gameRef = doc(db, 'games', gameId);
+                const gameDoc = await getDoc(gameRef);
+    
+                if(gameDoc.exists() && gameDoc.data().status === 'waiting') {
+                    gameState.gameId = gameId;
+                    gameState.mySymbol = '2';
+                    gameState.centerEnabled = gameDoc.data().centerEnabled;
+                    
+                    await setDoc(gameRef, {
+                        ...gameDoc.data(),
+                        status: 'ready'
+                    });
+    
+                    startGame();
+                } else {
+                    alert('Invalid game or game already in progress');
+                }
+            } catch (error) {
+                console.error("Error joining game:", error);
+                alert('Error joining game. Please try again.');
+            }
+        });
+    
+        centerToggle.addEventListener('click', async () => {
+            if (gameState.status === 'waiting' || gameState.status === 'ready') {
+                try {
+                    gameState.centerEnabled = !gameState.centerEnabled;
+                    centerToggle.textContent = gameState.centerEnabled ? 'Tắt ô giữa' : 'Bật ô giữa';
+                    
+                    await setDoc(doc(db, 'games', gameState.gameId), {
+                        centerEnabled: gameState.centerEnabled
+                    }, { merge: true });
+    
+                    updateBoard();
+                } catch (error) {
+                    console.error("Error updating center state:", error);
+                    alert('Error updating center state. Please try again.');
+                }
+            }
+        });
+    
+        startGameBtn.addEventListener('click', async () => {
+            if (gameState.status === 'ready') {
+                try {
+                    centerToggle.disabled = true;
+                    startGameBtn.disabled = true;
+                    
+                    await setDoc(doc(db, 'games', gameState.gameId), {
+                        status: 'playing',
+                        timeRemaining: TIMER_DURATION
+                    }, { merge: true });
+    
+                    if (gameState.mySymbol === '1') {
+                        startTimer();
+                    }
+                } catch (error) {
+                    console.error("Error starting game:", error);
+                    alert('Error starting game. Please try again.');
+                }
+            }
+        });
+    
+        resetGameBtn.addEventListener('click', async () => {
+            try {
+                stopTimer();
+                await setDoc(doc(db, 'games', gameState.gameId), {
+                    board: Array(BOARD_ROWS * BOARD_COLS).fill(''),
+                    currentPlayer: '1',
+                    status: 'ready',
+                    timeRemaining: TIMER_DURATION,
+                    timestamp: Date.now()
+                }, { merge: true });
+                
+                centerToggle.disabled = false;
+                startGameBtn.disabled = false;
+            } catch (error) {
+                console.error("Error resetting game:", error);
+                alert('Error resetting game. Please try again.');
+            }
+        });
+    
+        async function handleTimeout() {
+            if (gameState.status === 'playing' && gameState.currentPlayer === gameState.mySymbol) {
+                await setDoc(doc(db, 'games', gameState.gameId), {
+                    status: 'finished',
+                    winner: gameState.mySymbol === '1' ? '2' : '1',
+                    timeoutPlayer: gameState.mySymbol
+                }, { merge: true });
+            }
         }
-    });
-
-    // Start game
-    function startGame() {
-        menuScreen.classList.add('hidden');
-        gameScreen.classList.remove('hidden');
-        gameIdDisplay.textContent = `Game ID: ${gameState.gameId}`;
-        playerInfo.textContent = `You are playing as: ${gameState.mySymbol}`;
+    
+        function startGame() {
+            menuScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameIdDisplay.textContent = `Game ID: ${gameState.gameId}`;
+            playerInfo.textContent = `You are Player ${gameState.mySymbol}`;
+            centerToggle.textContent = gameState.centerEnabled ? 'Tắt ô giữa' : 'Bật ô giữa';
+            updateTimeDisplay();
+            initializeBoard();
+    
+            onSnapshot(doc(db, 'games', gameState.gameId), (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    gameState.board = data.board;
+                    gameState.currentPlayer = data.currentPlayer;
+                    gameState.status = data.status;
+                    gameState.centerEnabled = data.centerEnabled;
+                    
+                    if (data.status === 'playing') {
+                        if (data.currentPlayer === gameState.mySymbol) {
+                            if (!gameState.isTimerRunning) {
+                                startTimer();
+                            }
+                        } else {
+                            stopTimer();
+                            gameState.timeRemaining = data.timeRemaining;
+                            updateTimeDisplay();
+                        }
+                    }
+    
+                    updateBoard();
+                    updateGameInfo();
+    
+                    if (data.status === 'finished' && data.timeoutPlayer) {
+                        stopTimer();
+                        const winner = data.timeoutPlayer === '1' ? '2' : '1';
+                        currentTurn.textContent = winner === gameState.mySymbol ? 
+                            'You Win! (Opponent timeout)' : 'You Lose! (Timeout)';
+                    }
+                }
+            });
+        }
+    
+        function updateGameInfo() {
+            if(gameState.status === 'finished') {
+                stopTimer();
+                if (!document.querySelector('.cell.center').classList.contains('disabled')) {
+                    centerToggle.disabled = true;
+                }
+                const winner = gameState.currentPlayer === '1' ? '2' : '1';
+                currentTurn.textContent = winner === gameState.mySymbol ? 
+                    'Game Over! You Win!' : 'Game Over! You Lose!';
+            } else if (gameState.status === 'ready') {
+                currentTurn.textContent = "Waiting for game to start...";
+            } else if (gameState.status === 'playing') {
+                centerToggle.disabled = true;
+                currentTurn.textContent = gameState.currentPlayer === gameState.mySymbol ? 
+                    'Your turn' : "Opponent's turn";
+            }
+        }
+    
+        function checkWinner(board, row, col) {
+            const directions = [
+                [0, 1], [1, 0], [1, 1], [1, -1]
+            ];
+    
+            const index = row * BOARD_COLS + col;
+            const symbol = board[index];
+    
+            for(const [dx, dy] of directions) {
+                let count = 1;
+                
+                // Check forward
+                for(let i = 1; i < 5; i++) {
+                    const newRow = row + dx * i;
+                    const newCol = col + dy * i;
+                    if(!isValidPosition(newRow, newCol)) break;
+                    if(board[newRow * BOARD_COLS + newCol] !== symbol) break;
+                    count++;
+                }
+                
+                // Check backward
+                for(let i = 1; i < 5; i++) {
+                    const newRow = row - dx * i;
+                    const newCol = col - dy * i;
+                    if(!isValidPosition(newRow, newCol)) break;
+                    if(board[newRow * BOARD_COLS + newCol] !== symbol) break;
+                    count++;
+                }
+    
+                if(count >= 5) return true;
+            }
+            return false;
+        }
+    
+        function isValidPosition(row, col) {
+            return row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS;
+        }
+    
         initializeBoard();
-
-        // Listen for game updates
-        onSnapshot(doc(db, 'games', gameState.gameId), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                gameState.board = data.board;
-                gameState.currentPlayer = data.currentPlayer;
-                gameState.status = data.status;
-                updateBoard();
-                updateGameInfo();
-            }
-        });
-    }
-
-    // Handle cell click
-    async function handleCellClick(e) {
-        if(gameState.status !== 'playing' || gameState.currentPlayer !== gameState.mySymbol) return;
-
-        const row = parseInt(e.target.dataset.row);
-        const col = parseInt(e.target.dataset.col);
-        const index = getIndex(row, col);
-
-        if(gameState.board[index]) return;
-
-        try {
-            const newBoard = [...gameState.board];
-            newBoard[index] = gameState.mySymbol;
-
-            const newStatus = checkWinner(newBoard, row, col) ? 'finished' : 'playing';
-
-            await setDoc(doc(db, 'games', gameState.gameId), {
-                board: newBoard,
-                currentPlayer: gameState.mySymbol === 'X' ? 'O' : 'X',
-                status: newStatus,
-                lastMove: {row, col, player: gameState.mySymbol}
-            }, { merge: true });
-
-        } catch (error) {
-            console.error("Error updating game:", error);
-            alert('Error updating game. Please try again.');
-        }
-    }
-
-    // Update board display
-    function updateBoard() {
-        const cells = gameBoard.getElementsByClassName('cell');
-        for(let i = 0; i < cells.length; i++) {
-            cells[i].textContent = gameState.board[i];
-        }
-    }
-
-    // Update game info display
-    function updateGameInfo() {
-        if(gameState.status === 'finished') {
-            const winner = gameState.currentPlayer === 'X' ? 'O' : 'X';
-            currentTurn.textContent = winner === gameState.mySymbol ?
-                'Game Over! You Win!' : 'Game Over! You Lose!';
-            newGameBtn.classList.remove('hidden');
-        } else {
-            currentTurn.textContent = gameState.currentPlayer === gameState.mySymbol ?
-                'Your turn' : "Opponent's turn";
-        }
-    }
-
-    // Check for winner
-    function checkWinner(board, row, col) {
-        const directions = [
-            [0, 1], [1, 0], [1, 1], [1, -1]
-        ];
-
-        const index = getIndex(row, col);
-        const symbol = board[index];
-
-        for(const [dx, dy] of directions) {
-            let count = 1;
-
-            // Check forward
-            for(let i = 1; i < 5; i++) {
-                const newRow = row + dx * i;
-                const newCol = col + dy * i;
-                if(!isValidPosition(newRow, newCol)) break;
-                if(board[getIndex(newRow, newCol)] !== symbol) break;
-                count++;
-            }
-
-            // Check backward
-            for(let i = 1; i < 5; i++) {
-                const newRow = row - dx * i;
-                const newCol = col - dy * i;
-                if(!isValidPosition(newRow, newCol)) break;
-                if(board[getIndex(newRow, newCol)] !== symbol) break;
-                count++;
-            }
-
-            if(count >= 5) return true;
-        }
-        return false;
-    }
-
-    function isValidPosition(row, col) {
-        return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
-    }
-
-    // New game button handler
-    newGameBtn.addEventListener('click', () => {
-        window.location.reload();
-    });
-
-    // Initialize the game board
-    initializeBoard();
-
-    // Log để kiểm tra kết nối
-    console.log('Firebase initialized');
-    try {
-        const testDoc = await setDoc(doc(db, 'test', 'connection'), {
-            timestamp: Date.now()
-        });
-        console.log('Firebase connection test successful');
-    } catch (error) {
-        console.error('Firebase connection test failed:', error);
-    }
-</script>
+    </script>
 </body>
 </html>
