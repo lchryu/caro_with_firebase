@@ -1,856 +1,1132 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Gomoku Online</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
-        background: #f0f2f5;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f2f5;
+        }
 
-      .container {
-        text-align: center;
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        position: relative;
-      }
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
 
-      #loginScreen {
-        text-align: center;
-        padding: 20px;
-      }
+        #loginScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+        }
 
-      .user-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 10px 0;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 5px;
-      }
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
 
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
+        .login-box h1 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
 
-      .player-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 10px 0;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 5px;
-      }
+        .login-box h2 {
+            margin: 0 0 30px 0;
+            color: #666;
+            font-size: 1.2em;
+        }
 
-      .player {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
+        .btn-google {
+            background: #db4437;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            transition: background 0.3s ease;
+        }
 
-      #gameBoard {
-        display: grid;
-        grid-template-columns: repeat(19, 35px);
-        grid-template-rows: repeat(17, 35px);
-        gap: 1px;
-        background: #deb887;
-        padding: 10px;
-        margin: 20px auto;
-      }
+        .btn-google:hover {
+            background: #c31f12;
+        }
 
-      .cell {
-        width: 35px;
-        height: 35px;
-        background: #f5deb3;
-        border: 1px solid #8b4513;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        font-weight: bold;
-        color: #333;
-        position: relative;
-      }
+        .hidden {
+            display: none !important;
+        }
 
-      .cell.player1::after {
-        content: "X";
-        position: absolute;
-        font-size: 20px;
-        color: blue;
-        opacity: 1;
-      }
+        .game-left-panel {
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
 
-      .cell.player2::after {
-        content: "O";
-        position: absolute;
-        font-size: 20px;
-        color: red;
-        opacity: 1;
-      }
+        .game-board-area {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-      .cell span {
-        opacity: 0.3;
-      }
+        /* Login Screen */
+        #loginScreen {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+        }
 
-      .cell.center {
-        background: #e9ecef;
-      }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
 
-      .cell.center.disabled {
-        background: #808080;
-        cursor: not-allowed;
-      }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
 
-      .cell:not(.disabled):hover {
-        background: #f0e68c;
-      }
+        .player-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
 
-      .game-info {
-        margin: 20px 0;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 5px;
-      }
+        .player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-      .timer {
-        font-size: 24px;
-        font-weight: bold;
-        color: #dc3545;
-        margin: 10px 0;
-      }
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 10px 0;
+        }
 
-      .controls {
-        margin: 10px 0;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-      }
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(19, 35px);
+            grid-template-rows: repeat(17, 35px);
+            gap: 1px;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
 
-      .btn {
-        padding: 10px 20px;
-        margin: 5px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background 0.3s;
-      }
+        .cell {
+            width: 35px;
+            height: 35px;
+            background: white;
+            border: 1px solid #0066cc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #888;
+            position: relative;
+        }
 
-      .btn-primary {
-        background: #007bff;
-        color: white;
-      }
+        .cell.player1::after {
+            content: "X";
+            position: absolute;
+            font-size: 24px;
+            color: blue;
+            font-weight: bold;
+        }
 
-      .btn-primary:hover {
-        background: #0056b3;
-      }
+        .cell.player2::after {
+            content: "O";
+            position: absolute;
+            font-size: 24px;
+            color: red;
+            font-weight: bold;
+        }
 
-      .btn-google {
-        background: #db4437;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 20px;
-      }
+        .cell.center {
+            background: #f8f9fa;
+        }
 
-      .btn-google:hover {
-        background: #c31f12;
-      }
+        .cell.center.disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
 
-      .btn-control {
-        padding: 8px 15px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        cursor: pointer;
-        background: #fff;
-      }
+        .cell:not(.disabled):hover {
+            background: #f8f9fa;
+        }
 
-      .btn-control:hover:not(:disabled) {
-        background: #f0f0f0;
-      }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
 
-      .btn-control:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+        }
 
-      .btn-start {
-        background: #28a745;
-        color: white;
-        border: none;
-      }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
 
-      .btn-start:hover:not(:disabled) {
-        background: #218838;
-      }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
 
-      .btn-reset {
-        background: #dc3545;
-        color: white;
-        border: none;
-      }
+        .btn-start {
+            background: #28a745;
+            color: white;
+        }
 
-      .btn-reset:hover {
-        background: #c82333;
-      }
+        .btn-start:hover:not(:disabled) {
+            background: #218838;
+        }
 
-      #gameId {
-        padding: 10px;
-        margin: 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
+        .btn-reset {
+            background: #dc3545;
+            color: white;
+        }
 
-      .hidden {
-        display: none;
-      }
+        .btn-reset:hover {
+            background: #c82333;
+        }
 
-      #logoutBtn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        padding: 5px 10px;
-        background: #6c757d;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
+        #gameId {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+        }
 
-      #logoutBtn:hover {
-        background: #5a6268;
-      }
+        #logoutBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #logoutBtn:hover {
+            background: #5a6268;
+        }
+
+        .game-status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .game-info {
+            width: 200px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            height: fit-content;
+        }
+
+        .board-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .chat-container {
+            width: 320px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            height: 400px;
+            padding: 15px;
+            overflow-y: auto;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .send-btn {
+            background: #007bff;
+            color: white;
+            padding: 8px 15px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .message .sender {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        /* CSS cho menu screen */
+        #menuScreen {
+            width: 100%;
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #menuScreen h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        #createGame {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .game-id-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        #gameId {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #joinGame {
+            width: auto;
+            white-space: nowrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .player1-name {
+            color: #cc0000;
+            font-weight: bold;
+        }
+
+        .player2-name {
+            color: #0066cc;
+            font-weight: bold;
+        }
+
+        /* Style cho user name ở menu screen */
+        #userName {
+            color: #cc0000;
+            font-weight: bold;
+        }
+
+        /* CSS cho chat container */
+        .chat-container {
+            width: 320px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            height: 400px;
+            padding: 15px;
+            overflow-y: auto;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .send-btn {
+            background: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Style cho tin nhắn */
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+        }
+
+        /* Player 1 message style */
+        .message.player1 .sender {
+            color: #cc0000;
+            font-weight: bold;
+        }
+
+        /* Player 2 message style */
+        .message.player2 .sender {
+            color: #0066cc;
+            font-weight: bold;
+        }
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <button id="logoutBtn" class="hidden">Đăng xuất</button>
+</head>
+<body>
+    <div class="main-container" id="mainContainer">
+        <button id="logoutBtn" class="hidden">Đăng xuất</button>
 
-      <div id="loginScreen">
-        <h1>Gomoku Online</h1>
-        <h2>Đăng nhập để chơi</h2>
-        <button id="loginBtn" class="btn btn-google">
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            width="18"
-            height="18"
-          />
-          Đăng nhập với Google
-        </button>
-      </div>
-
-      <div id="menuScreen" class="hidden">
-        <h1>Gomoku Online</h1>
-        <div class="user-info">
-          <img id="userAvatar" class="user-avatar" src="" alt="avatar" />
-          <span id="userName"></span>
-        </div>
-        <button id="createGame" class="btn btn-primary">Tạo game mới</button>
-        <div>
-          <input type="text" id="gameId" placeholder="Nhập Game ID" />
-          <button id="joinGame" class="btn btn-primary">Vào game</button>
-        </div>
-      </div>
-
-      <div id="gameScreen" class="hidden">
-        <div class="game-info">
-          <div id="gameIdDisplay"></div>
-          <div class="player-info">
-            <div class="player">
-              <img
-                id="player1Avatar"
-                class="user-avatar"
-                src=""
-                alt="Player 1"
-              />
-              <span id="player1Name"></span>
+        <div id="loginScreen">
+            <div class="login-box">
+                <h1>Gomoku Online</h1>
+                <h2>Đăng nhập để chơi</h2>
+                <button id="loginBtn" class="btn btn-google">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18">
+                    Đăng nhập với Google
+                </button>
             </div>
-            <div class="player">
-              <img
-                id="player2Avatar"
-                class="user-avatar"
-                src=""
-                alt="Player 2"
-              />
-              <span id="player2Name"></span>
+        </div>
+
+        <div id="menuScreen" class="hidden">
+            <h1>Gomoku Online</h1>
+            <div class="user-info">
+                <img id="userAvatar" class="user-avatar" src="" alt="avatar">
+                <span id="userName"></span>
             </div>
-          </div>
-          <div id="currentTurn"></div>
-          <div class="timer">Thời gian: <span id="timeDisplay">60</span>s</div>
+            <button id="createGame" class="btn btn-primary">Tạo game mới</button>
+            <div class="game-id-container">
+                <input type="text" id="gameId" placeholder="Nhập Game ID">
+                <button id="joinGame" class="btn btn-primary">Vào game</button>
+            </div>
         </div>
 
-        <div class="controls">
-          <button id="centerToggle" class="btn-control">Tắt ô giữa</button>
-          <button id="startGame" class="btn-control btn-start">Bắt đầu</button>
-          <button id="resetGame" class="btn-control btn-reset">Reset</button>
-        </div>
+        <div id="gameScreen" class="hidden">
+            <div class="game-container">
+                <!-- Game Info Panel -->
+                <div class="game-info">
+                    <h3 id="gameIdDisplay">Game ID: </h3>
+                    <div class="players">
+                        <div class="player">
+                            <img id="player1Avatar" class="user-avatar" src="" alt="Player 1">
+                            <span id="player1Name" class="player1-name"></span>
+                        </div>
+                        <div class="player">
+                            <img id="player2Avatar" class="user-avatar" src="" alt="Player 2">
+                            <span id="player2Name" class="player2-name"></span>
+                        </div>
+                    </div>
+                    <div class="timer">Thời gian: <span id="timeDisplay">60</span>s</div>
+                    <div class="controls">
+                        <button id="startGame" class="btn btn-start">Bắt đầu</button>
+                        <button id="resetGame" class="btn btn-reset">Reset</button>
+                        <button id="centerToggle" class="btn btn-primary">Tắt ô giữa</button>
+                    </div>
+                    <div id="currentTurn" class="game-status"></div>
+                </div>
 
-        <div id="gameBoard"></div>
-      </div>
+                <!-- Game Board -->
+                <div class="board-container">
+                    <div id="gameBoard" class="game-board"></div>
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be added here dynamically -->
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Type a message...">
+                        <button class="send-btn" id="sendMessage">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script type="module">
-      // Import the functions you need from the SDKs
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-      import {
-        getAuth,
-        signInWithPopup,
-        GoogleAuthProvider,
-        signOut,
-        onAuthStateChanged,
-      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-      import {
-        getFirestore,
-        collection,
-        doc,
-        setDoc,
-        getDoc,
-        onSnapshot,
-      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyDynAI_d34bY2J2TpiXi-cFJu-yQjBXWwU",
-        authDomain: "caro-firebase.firebaseapp.com",
-        projectId: "caro-firebase",
-        storageBucket: "caro-firebase.firebasestorage.app",
-        messagingSenderId: "357402393311",
-        appId: "1:357402393311:web:5185772e05c641c5ef876a",
-        measurementId: "G-5CE4HQQKD3",
-      };
-
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const auth = getAuth();
-      auth.useDeviceLanguage(); // Sử dụng ngôn ngữ của thiết bị
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: "select_account", // Luôn hiển thị màn hình chọn tài khoản Google
-      });
-      const db = getFirestore(app);
-
-      // Game Constants
-      const BOARD_ROWS = 17;
-      const BOARD_COLS = 19;
-      const CENTER_ROW = Math.floor(BOARD_ROWS / 2);
-      const CENTER_COL = Math.floor(BOARD_COLS / 2);
-      const TIMER_DURATION = 60;
-
-      // Game state
-      let gameState = {
-        board: Array(BOARD_ROWS * BOARD_COLS).fill(""),
-        currentPlayer: "1",
-        gameId: null,
-        status: "waiting",
-        mySymbol: null,
-        centerEnabled: true,
-        timeRemaining: TIMER_DURATION,
-        timerInterval: null,
-        isTimerRunning: false,
-        user: null,
-      };
-
-      // DOM elements - Auth related
-      const loginScreen = document.getElementById("loginScreen");
-      const loginBtn = document.getElementById("loginBtn");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const userAvatar = document.getElementById("userAvatar");
-      const userName = document.getElementById("userName");
-      const player1Avatar = document.getElementById("player1Avatar");
-      const player2Avatar = document.getElementById("player2Avatar");
-      const player1Name = document.getElementById("player1Name");
-      const player2Name = document.getElementById("player2Name");
-
-      // DOM elements - Game related
-      const gameBoard = document.getElementById("gameBoard");
-      const menuScreen = document.getElementById("menuScreen");
-      const gameScreen = document.getElementById("gameScreen");
-      const createGameBtn = document.getElementById("createGame");
-      const joinGameBtn = document.getElementById("joinGame");
-      const gameIdInput = document.getElementById("gameId");
-      const gameIdDisplay = document.getElementById("gameIdDisplay");
-      const currentTurn = document.getElementById("currentTurn");
-      const centerToggle = document.getElementById("centerToggle");
-      const startGameBtn = document.getElementById("startGame");
-      const resetGameBtn = document.getElementById("resetGame");
-      const timeDisplay = document.getElementById("timeDisplay");
-
-      // Auth event handlers
-      loginBtn.addEventListener("click", async () => {
-        try {
-          const result = await signInWithPopup(auth, provider);
-          gameState.user = {
-            uid: result.user.uid,
-            name: result.user.displayName,
-            avatar: result.user.photoURL,
-          };
-        } catch (error) {
-          console.error("Error during login:", error);
-          alert("Login failed. Please try again.");
-        }
-      });
-
-      logoutBtn.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-          window.location.reload();
-        } catch (error) {
-          console.error("Error during logout:", error);
-        }
-      });
-
-      // Auth state observer
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          // User is signed in
-          gameState.user = {
-            uid: user.uid,
-            name: user.displayName,
-            avatar: user.photoURL,
-          };
-
-          // Update UI
-          loginScreen.classList.add("hidden");
-          menuScreen.classList.remove("hidden");
-          logoutBtn.classList.remove("hidden");
-          userAvatar.src = user.photoURL || "default-avatar.png";
-          userName.textContent = user.displayName;
-        } else {
-          // User is signed out
-          loginScreen.classList.remove("hidden");
-          menuScreen.classList.add("hidden");
-          gameScreen.classList.add("hidden");
-          logoutBtn.classList.add("hidden");
-        }
-      });
-
-      // Game Functions
-      function startTimer() {
-        stopTimer();
-        gameState.timeRemaining = TIMER_DURATION;
-        gameState.isTimerRunning = true;
-        updateTimeDisplay();
-
-        gameState.timerInterval = setInterval(() => {
-          if (gameState.timeRemaining > 0) {
-            gameState.timeRemaining--;
-            updateTimeDisplay();
-
-            setDoc(
-              doc(db, "games", gameState.gameId),
-              {
-                timeRemaining: gameState.timeRemaining,
-              },
-              { merge: true }
-            );
-
-            if (gameState.timeRemaining === 0) {
-              stopTimer();
-              handleTimeout();
-            }
-          }
-        }, 1000);
-      }
-
-      function stopTimer() {
-        if (gameState.timerInterval) {
-          clearInterval(gameState.timerInterval);
-          gameState.timerInterval = null;
-          gameState.isTimerRunning = false;
-        }
-      }
-
-      function updateTimeDisplay() {
-        timeDisplay.textContent = gameState.timeRemaining;
-      }
-
-      async function handleTimeout() {
-        if (
-          gameState.status === "playing" &&
-          gameState.currentPlayer === gameState.mySymbol
-        ) {
-          await setDoc(
-            doc(db, "games", gameState.gameId),
-            {
-              status: "finished",
-              winner: gameState.mySymbol === "1" ? "2" : "1",
-              timeoutPlayer: gameState.mySymbol,
-            },
-            { merge: true }
-          );
-        }
-      }
-      function calculateCellNumber(row, col) {
-        return row * 20 + col + 1;
-      }
-
-      function isCenterCell(row, col) {
-        return row === CENTER_ROW && col === CENTER_COL;
-      }
-
-      function initializeBoard() {
-        gameBoard.innerHTML = "";
-        for (let row = 0; row < BOARD_ROWS; row++) {
-          for (let col = 0; col < BOARD_COLS; col++) {
-            const cell = document.createElement("div");
-            cell.classList.add("cell");
-
-            const span = document.createElement("span");
-            span.textContent = calculateCellNumber(row, col);
-            cell.appendChild(span);
-
-            if (isCenterCell(row, col)) {
-              cell.classList.add("center");
-              if (!gameState.centerEnabled) {
-                cell.classList.add("disabled");
-              }
-            }
-
-            cell.dataset.row = row;
-            cell.dataset.col = col;
-            cell.addEventListener("click", handleCellClick);
-            gameBoard.appendChild(cell);
-          }
-        }
-      }
-
-      async function handleCellClick(e) {
-        if (
-          gameState.status !== "playing" ||
-          gameState.currentPlayer !== gameState.mySymbol
-        )
-          return;
-
-        const cell = e.target.closest(".cell");
-        if (!cell) return;
-
-        const row = parseInt(cell.dataset.row);
-        const col = parseInt(cell.dataset.col);
-
-        if (isCenterCell(row, col) && !gameState.centerEnabled) return;
-
-        const index = row * BOARD_COLS + col;
-        if (gameState.board[index]) return;
-
-        try {
-          stopTimer();
-
-          const newBoard = [...gameState.board];
-          newBoard[index] = gameState.mySymbol;
-
-          const newStatus = checkWinner(newBoard, row, col)
-            ? "finished"
-            : "playing";
-
-          await setDoc(
-            doc(db, "games", gameState.gameId),
-            {
-              board: newBoard,
-              currentPlayer: gameState.mySymbol === "1" ? "2" : "1",
-              status: newStatus,
-              lastMove: { row, col, player: gameState.mySymbol },
-              timeRemaining: TIMER_DURATION,
-            },
-            { merge: true }
-          );
-        } catch (error) {
-          console.error("Error updating game:", error);
-          alert("Error updating game. Please try again.");
-        }
-      }
-
-      function updateBoard() {
-        for (let row = 0; row < BOARD_ROWS; row++) {
-          for (let col = 0; col < BOARD_COLS; col++) {
-            const index = row * BOARD_COLS + col;
-            const cell = document.querySelector(
-              `[data-row="${row}"][data-col="${col}"]`
-            );
-
-            if (cell) {
-              const value = gameState.board[index];
-              cell.classList.remove("player1", "player2");
-              if (value) {
-                cell.classList.add(`player${value}`);
-              }
-
-              if (isCenterCell(row, col)) {
-                if (gameState.centerEnabled) {
-                  cell.classList.remove("disabled");
-                } else {
-                  cell.classList.add("disabled");
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // Game control event handlers
-      createGameBtn.addEventListener("click", async () => {
-        try {
-          const gameId = Math.random()
-            .toString(36)
-            .substring(2, 8)
-            .toUpperCase();
-          gameState.gameId = gameId;
-          gameState.mySymbol = "1";
-
-          await setDoc(doc(db, "games", gameId), {
-            board: Array(BOARD_ROWS * BOARD_COLS).fill(""),
-            currentPlayer: "1",
-            status: "waiting",
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { 
+            getAuth, 
+            signInWithPopup, 
+            GoogleAuthProvider,
+            signOut,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            onSnapshot,
+            arrayUnion 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyDynAI_d34bY2J2TpiXi-cFJu-yQjBXWwU",
+            authDomain: "caro-firebase.firebaseapp.com",
+            projectId: "caro-firebase",
+            storageBucket: "caro-firebase.firebasestorage.app",
+            messagingSenderId: "357402393311",
+            appId: "1:357402393311:web:5185772e05c641c5ef876a",
+            measurementId: "G-5CE4HQQKD3"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth();
+        auth.useDeviceLanguage();
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({
+            prompt: 'select_account'
+        });
+        const db = getFirestore(app);
+    
+        // Game Constants
+        const BOARD_ROWS = 17;
+        const BOARD_COLS = 19;
+        const CENTER_ROW = Math.floor(BOARD_ROWS / 2);
+        const CENTER_COL = Math.floor(BOARD_COLS / 2);
+        const TIMER_DURATION = 60;
+        
+        // Nước đi đầu tiên hợp lệ (8 ô xung quanh ô center)
+        const VALID_FIRST_MOVES = [
+            {row: CENTER_ROW-1, col: CENTER_COL-1}, // 149
+            {row: CENTER_ROW-1, col: CENTER_COL},   // 150
+            {row: CENTER_ROW-1, col: CENTER_COL+1}, // 151
+            {row: CENTER_ROW, col: CENTER_COL-1},   // 169
+            {row: CENTER_ROW, col: CENTER_COL+1},   // 171
+            {row: CENTER_ROW+1, col: CENTER_COL-1}, // 189
+            {row: CENTER_ROW+1, col: CENTER_COL},   // 190
+            {row: CENTER_ROW+1, col: CENTER_COL+1}  // 191
+        ];
+    
+        // Game state
+        let gameState = {
+            board: Array(BOARD_ROWS * BOARD_COLS).fill(''),
+            currentPlayer: '1',
+            gameId: null,
+            status: 'waiting',
+            mySymbol: null,
             centerEnabled: true,
             timeRemaining: TIMER_DURATION,
-            timestamp: Date.now(),
-            player1: gameState.user,
-            player2: null,
-          });
-
-          startGame();
-        } catch (error) {
-          console.error("Error creating game:", error);
-          alert("Error creating game. Please try again.");
-        }
-      });
-
-      joinGameBtn.addEventListener("click", async () => {
-        try {
-          const gameId = gameIdInput.value.toUpperCase();
-          const gameRef = doc(db, "games", gameId);
-          const gameDoc = await getDoc(gameRef);
-
-          if (gameDoc.exists() && gameDoc.data().status === "waiting") {
-            gameState.gameId = gameId;
-            gameState.mySymbol = "2";
-            gameState.centerEnabled = gameDoc.data().centerEnabled;
-
-            await setDoc(gameRef, {
-              ...gameDoc.data(),
-              status: "ready",
-              player2: gameState.user,
-            });
-
-            startGame();
-          } else {
-            alert("Invalid game or game already in progress");
-          }
-        } catch (error) {
-          console.error("Error joining game:", error);
-          alert("Error joining game. Please try again.");
-        }
-      });
-
-      centerToggle.addEventListener("click", async () => {
-        if (gameState.status === "waiting" || gameState.status === "ready") {
-          try {
-            gameState.centerEnabled = !gameState.centerEnabled;
-            centerToggle.textContent = gameState.centerEnabled
-              ? "Tắt ô giữa"
-              : "Bật ô giữa";
-
-            await setDoc(
-              doc(db, "games", gameState.gameId),
-              {
-                centerEnabled: gameState.centerEnabled,
-              },
-              { merge: true }
-            );
-
-            updateBoard();
-          } catch (error) {
-            console.error("Error updating center state:", error);
-            alert("Error updating center state. Please try again.");
-          }
-        }
-      });
-
-      startGameBtn.addEventListener("click", async () => {
-        if (gameState.status === "ready") {
-          try {
-            centerToggle.disabled = true;
-            startGameBtn.disabled = true;
-
-            await setDoc(
-              doc(db, "games", gameState.gameId),
-              {
-                status: "playing",
-                timeRemaining: TIMER_DURATION,
-              },
-              { merge: true }
-            );
-
-            if (gameState.mySymbol === "1") {
-              startTimer();
+            timerInterval: null,
+            isTimerRunning: false,
+            user: null,
+            moveCount: 0, // Đếm số nước đã đi
+            isFirstPlayerNext: true, // true = player1 đi tiếp, false = player2 đi tiếp
+            messages: []
+        };
+    
+        // DOM elements
+        const mainContainer = document.getElementById('mainContainer');
+        const loginScreen = document.getElementById('loginScreen');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const player1Avatar = document.getElementById('player1Avatar');
+        const player2Avatar = document.getElementById('player2Avatar');
+        const player1Name = document.getElementById('player1Name');
+        const player2Name = document.getElementById('player2Name');
+        const gameBoard = document.getElementById('gameBoard');
+        const menuScreen = document.getElementById('menuScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const createGameBtn = document.getElementById('createGame');
+        const joinGameBtn = document.getElementById('joinGame');
+        const gameIdInput = document.getElementById('gameId');
+        const gameIdDisplay = document.getElementById('gameIdDisplay');
+        const currentTurn = document.getElementById('currentTurn');
+        const centerToggle = document.getElementById('centerToggle');
+        const startGameBtn = document.getElementById('startGame');
+        const resetGameBtn = document.getElementById('resetGame');
+        const timeDisplay = document.getElementById('timeDisplay');
+    
+        // Auth event handlers
+        loginBtn.addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                gameState.user = {
+                    uid: result.user.uid,
+                    name: result.user.displayName,
+                    avatar: result.user.photoURL
+                };
+            } catch (error) {
+                console.error("Error during login:", error);
+                alert('Login failed. Please try again.');
             }
-          } catch (error) {
-            console.error("Error starting game:", error);
-            alert("Error starting game. Please try again.");
-          }
-        }
-      });
-
-      resetGameBtn.addEventListener("click", async () => {
-        try {
-          stopTimer();
-          await setDoc(
-            doc(db, "games", gameState.gameId),
-            {
-              board: Array(BOARD_ROWS * BOARD_COLS).fill(""),
-              currentPlayer: "1",
-              status: "ready",
-              timeRemaining: TIMER_DURATION,
-              timestamp: Date.now(),
-            },
-            { merge: true }
-          );
-
-          centerToggle.disabled = false;
-          startGameBtn.disabled = false;
-        } catch (error) {
-          console.error("Error resetting game:", error);
-          alert("Error resetting game. Please try again.");
-        }
-      });
-
-      // Main game functions
-      function startGame() {
-        menuScreen.classList.add("hidden");
-        gameScreen.classList.remove("hidden");
-        gameIdDisplay.textContent = `Game ID: ${gameState.gameId}`;
-        centerToggle.textContent = gameState.centerEnabled
-          ? "Tắt ô giữa"
-          : "Bật ô giữa";
-        updateTimeDisplay();
-        initializeBoard();
-
-        onSnapshot(doc(db, "games", gameState.gameId), (doc) => {
-          if (doc.exists()) {
-            const data = doc.data();
-            gameState.board = data.board;
-            gameState.currentPlayer = data.currentPlayer;
-            gameState.status = data.status;
-            gameState.centerEnabled = data.centerEnabled;
-
-            // Update player info
-            if (data.player1) {
-              player1Avatar.src = data.player1.avatar;
-              player1Name.textContent = data.player1.name;
-            }
-            if (data.player2) {
-              player2Avatar.src = data.player2.avatar;
-              player2Name.textContent = data.player2.name;
-            }
-
-            if (data.status === "playing") {
-              if (data.currentPlayer === gameState.mySymbol) {
-                if (!gameState.isTimerRunning) {
-                  startTimer();
-                }
-              } else {
-                stopTimer();
-                gameState.timeRemaining = data.timeRemaining;
-                updateTimeDisplay();
-              }
-            }
-
-            updateBoard();
-            updateGameInfo();
-
-            if (data.status === "finished" && data.timeoutPlayer) {
-              stopTimer();
-              const winner = data.timeoutPlayer === "1" ? "2" : "1";
-              currentTurn.textContent =
-                winner === gameState.mySymbol
-                  ? "You Win! (Opponent timeout)"
-                  : "You Lose! (Timeout)";
-            }
-          }
         });
-      }
-
-      function updateGameInfo() {
-        if (gameState.status === "finished") {
-          stopTimer();
-          if (
-            !document
-              .querySelector(".cell.center")
-              .classList.contains("disabled")
-          ) {
-            centerToggle.disabled = true;
-          }
-          const winner = gameState.currentPlayer === "1" ? "2" : "1";
-          currentTurn.textContent =
-            winner === gameState.mySymbol
-              ? "Game Over! You Win!"
-              : "Game Over! You Lose!";
-        } else if (gameState.status === "ready") {
-          currentTurn.textContent = "Waiting for game to start...";
-        } else if (gameState.status === "playing") {
-          centerToggle.disabled = true;
-          currentTurn.textContent =
-            gameState.currentPlayer === gameState.mySymbol
-              ? "Your turn"
-              : "Opponent's turn";
+    
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.reload();
+            } catch (error) {
+                console.error("Error during logout:", error);
+            }
+        });
+    
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                gameState.user = {
+                    uid: user.uid,
+                    name: user.displayName,
+                    avatar: user.photoURL
+                };
+                
+                loginScreen.classList.add('hidden');
+                menuScreen.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                userAvatar.src = user.photoURL || 'default-avatar.png';
+                userName.textContent = user.displayName;
+            } else {
+                loginScreen.classList.remove('hidden');
+                menuScreen.classList.add('hidden');
+                gameScreen.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+            }
+        });
+    
+        // Timer functions
+        function startTimer() {
+            stopTimer();
+            gameState.timeRemaining = TIMER_DURATION;
+            gameState.isTimerRunning = true;
+            updateTimeDisplay();
+    
+            gameState.timerInterval = setInterval(async () => {
+                if (gameState.timeRemaining > 0) {
+                    gameState.timeRemaining--;
+                    updateTimeDisplay();
+                    
+                    await setDoc(doc(db, 'games', gameState.gameId), {
+                        timeRemaining: gameState.timeRemaining
+                    }, { merge: true });
+    
+                    if (gameState.timeRemaining === 0) {
+                        stopTimer();
+                        handleTimeout();
+                    }
+                }
+            }, 1000);
         }
-      }
-
-      function checkWinner(board, row, col) {
-        const directions = [
-          [0, 1],
-          [1, 0],
-          [1, 1],
-          [1, -1],
-        ];
-
-        const index = row * BOARD_COLS + col;
-        const symbol = board[index];
-
-        for (const [dx, dy] of directions) {
-          let count = 1;
-
-          // Check forward
-          for (let i = 1; i < 5; i++) {
-            const newRow = row + dx * i;
-            const newCol = col + dy * i;
-            if (!isValidPosition(newRow, newCol)) break;
-            if (board[newRow * BOARD_COLS + newCol] !== symbol) break;
-            count++;
-          }
-
-          // Check backward
-          for (let i = 1; i < 5; i++) {
-            const newRow = row - dx * i;
-            const newCol = col - dy * i;
-            if (!isValidPosition(newRow, newCol)) break;
-            if (board[newRow * BOARD_COLS + newCol] !== symbol) break;
-            count++;
-          }
-
-          if (count >= 5) return true;
+    
+        function stopTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+                gameState.isTimerRunning = false;
+            }
         }
-        return false;
-      }
+    
+        function updateTimeDisplay() {
+            timeDisplay.textContent = gameState.timeRemaining;
+        }
+    
+        // Game functions
+        function calculateCellNumber(row, col) {
+            return row * 20 + col + 1;
+        }
+    
+        function isCenterCell(row, col) {
+            return row === CENTER_ROW && col === CENTER_COL;
+        }
+    
+        function isValidFirstMove(row, col) {
+            return VALID_FIRST_MOVES.some(move => 
+                move.row === row && move.col === col
+            );
+        }
+    
+        function initializeBoard() {
+            gameBoard.innerHTML = '';
+            for(let row = 0; row < BOARD_ROWS; row++) {
+                for(let col = 0; col < BOARD_COLS; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    
+                    const span = document.createElement('span');
+                    span.textContent = calculateCellNumber(row, col);
+                    cell.appendChild(span);
+                    
+                    if (isCenterCell(row, col)) {
+                        cell.classList.add('center');
+                        if (!gameState.centerEnabled) {
+                            cell.classList.add('disabled');
+                        }
+                    }
+                    
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('click', handleCellClick);
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+        async function handleCellClick(e) {
+            if(gameState.status !== 'playing' || gameState.currentPlayer !== gameState.mySymbol) return;
+    
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+    
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            if (isCenterCell(row, col) && !gameState.centerEnabled) return;
+            
+            // Validate nước đi đầu tiên
+            if (gameState.moveCount === 0 && !isValidFirstMove(row, col)) {
+                alert('Nước đi đầu tiên phải là một trong 8 ô xung quanh ô giữa!');
+                return;
+            }
+    
+            const index = row * BOARD_COLS + col;
+            if(gameState.board[index]) return;
+    
+            try {
+                stopTimer();
+    
+                const newBoard = [...gameState.board];
+                newBoard[index] = gameState.mySymbol;
+    
+                const newStatus = checkWinner(newBoard, row, col) ? 'finished' : 'playing';
+                
+                await setDoc(doc(db, 'games', gameState.gameId), {
+                    board: newBoard,
+                    currentPlayer: gameState.mySymbol === '1' ? '2' : '1',
+                    status: newStatus,
+                    lastMove: {row, col, player: gameState.mySymbol},
+                    timeRemaining: TIMER_DURATION,
+                    moveCount: gameState.moveCount + 1
+                }, { merge: true });
+    
+            } catch (error) {
+                console.error("Error updating game:", error);
+                alert('Error updating game. Please try again.');
+            }
+        }
+    
+        async function handleTimeout() {
+            if (gameState.status === 'playing' && gameState.currentPlayer === gameState.mySymbol) {
+                await setDoc(doc(db, 'games', gameState.gameId), {
+                    status: 'finished',
+                    winner: gameState.mySymbol === '1' ? '2' : '1',
+                    timeoutPlayer: gameState.mySymbol
+                }, { merge: true });
+            }
+        }
+    
+        createGameBtn.addEventListener('click', async () => {
+            try {
+                const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                gameState.gameId = gameId;
+                gameState.mySymbol = '1';
+                
+                await setDoc(doc(db, 'games', gameId), {
+                    board: Array(BOARD_ROWS * BOARD_COLS).fill(''),
+                    currentPlayer: '1',
+                    status: 'waiting',
+                    centerEnabled: true,
+                    timeRemaining: TIMER_DURATION,
+                    timestamp: Date.now(),
+                    player1: gameState.user,
+                    player2: null,
+                    moveCount: 0,
+                    isFirstPlayerNext: true,
+                    messages: []
+                });
+    
+                startGame();
+            } catch (error) {
+                console.error("Error creating game:", error);
+                alert('Error creating game. Please try again.');
+            }
+        });
+    
+        joinGameBtn.addEventListener('click', async () => {
+            try {
+                const gameId = gameIdInput.value.toUpperCase();
+                const gameRef = doc(db, 'games', gameId);
+                const gameDoc = await getDoc(gameRef);
+    
+                if(gameDoc.exists() && gameDoc.data().status === 'waiting') {
+                    gameState.gameId = gameId;
+                    gameState.mySymbol = '2';
+                    gameState.centerEnabled = gameDoc.data().centerEnabled;
+                    
+                    await setDoc(gameRef, {
+                        ...gameDoc.data(),
+                        status: 'ready',
+                        player2: gameState.user
+                    });
+    
+                    startGame();
+                } else {
+                    alert('Invalid game or game already in progress');
+                }
+            } catch (error) {
+                console.error("Error joining game:", error);
+                alert('Error joining game. Please try again.');
+            }
+        });
+    
+        centerToggle.addEventListener('click', async () => {
+            if (gameState.status === 'waiting' || gameState.status === 'ready') {
+                try {
+                    gameState.centerEnabled = !gameState.centerEnabled;
+                    centerToggle.textContent = gameState.centerEnabled ? 'Tắt ô giữa' : 'Bật ô giữa';
+                    
+                    await setDoc(doc(db, 'games', gameState.gameId), {
+                        centerEnabled: gameState.centerEnabled
+                    }, { merge: true });
+    
+                    updateBoard();
+                } catch (error) {
+                    console.error("Error updating center state:", error);
+                    alert('Error updating center state. Please try again.');
+                }
+            }
+        });
+    
+        startGameBtn.addEventListener('click', async () => {
+            if (gameState.status === 'ready') {
+                try {
+                    centerToggle.disabled = true;
+                    startGameBtn.disabled = true;
+                    
+                    await setDoc(doc(db, 'games', gameState.gameId), {
+                        status: 'playing',
+                        timeRemaining: TIMER_DURATION
+                    }, { merge: true });
+    
+                    if (gameState.mySymbol === '1') {
+                        startTimer();
+                    }
+                } catch (error) {
+                    console.error("Error starting game:", error);
+                    alert('Error starting game. Please try again.');
+                }
+            }
+        });
+    
+        resetGameBtn.addEventListener('click', async () => {
+            try {
+                stopTimer();
+                const nextFirstPlayer = !gameState.isFirstPlayerNext;
+                
+                await setDoc(doc(db, 'games', gameState.gameId), {
+                    board: Array(BOARD_ROWS * BOARD_COLS).fill(''),
+                    currentPlayer: nextFirstPlayer ? '2' : '1',
+                    status: 'ready',
+                    timeRemaining: TIMER_DURATION,
+                    timestamp: Date.now(),
+                    moveCount: 0,
+                    isFirstPlayerNext: nextFirstPlayer
+                }, { merge: true });
+                
+                centerToggle.disabled = false;
+                startGameBtn.disabled = false;
 
-      function isValidPosition(row, col) {
-        return row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS;
-      }
+                currentTurn.textContent = nextFirstPlayer ? 
+                    "Player 2 đi trước" : "Player 1 đi trước";
 
-      initializeBoard();
+            } catch (error) {
+                console.error("Error resetting game:", error);
+                alert('Error resetting game. Please try again.');
+            }
+        });
+    
+        function updateBoard() {
+            for(let row = 0; row < BOARD_ROWS; row++) {
+                for(let col = 0; col < BOARD_COLS; col++) {
+                    const index = row * BOARD_COLS + col;
+                    const cell = document.querySelector(
+                        `[data-row="${row}"][data-col="${col}"]`
+                    );
+                    
+                    if (cell) {
+                        const value = gameState.board[index];
+                        cell.classList.remove('player1', 'player2');
+                        if (value) {
+                            cell.classList.add(`player${value}`);
+                        }
+                        
+                        if (isCenterCell(row, col)) {
+                            if (gameState.centerEnabled) {
+                                cell.classList.remove('disabled');
+                            } else {
+                                cell.classList.add('disabled');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        function startGame() {
+            menuScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameIdDisplay.textContent = `Game ID: ${gameState.gameId}`;
+            centerToggle.textContent = gameState.centerEnabled ? 'Tắt ô giữa' : 'Bật ô giữa';
+            updateTimeDisplay();
+            initializeBoard();
+    
+            onSnapshot(doc(db, 'games', gameState.gameId), (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    gameState.board = data.board;
+                    gameState.currentPlayer = data.currentPlayer;
+                    gameState.status = data.status;
+                    gameState.centerEnabled = data.centerEnabled;
+                    gameState.moveCount = data.moveCount || 0;
+                    gameState.isFirstPlayerNext = data.isFirstPlayerNext;
+    
+                    // Update player info
+                    if (data.player1) {
+                        player1Avatar.src = data.player1.avatar;
+                        player1Name.textContent = data.player1.name;
+                    }
+                    if (data.player2) {
+                        player2Avatar.src = data.player2.avatar;
+                        player2Name.textContent = data.player2.name;
+                    }
+                    
+                    if (data.status === 'playing') {
+                        if (data.currentPlayer === gameState.mySymbol) {
+                            if (!gameState.isTimerRunning) {
+                                startTimer();
+                            }
+                        } else {
+                            stopTimer();
+                            gameState.timeRemaining = data.timeRemaining;
+                            updateTimeDisplay();
+                        }
+                    }
+    
+                    updateBoard();
+                    updateGameInfo();
+    
+                    if (data.status === 'finished' && data.timeoutPlayer) {
+                        stopTimer();
+                        const winner = data.timeoutPlayer === '1' ? '2' : '1';
+                        currentTurn.textContent = winner === gameState.mySymbol ? 
+                            'You Win! (Opponent timeout)' : 'You Lose! (Timeout)';
+                    }
+    
+                    // Update messages
+                    if (data.messages) {
+                        const chatMessages = document.getElementById('chatMessages');
+                        chatMessages.innerHTML = '';
+                        data.messages.forEach(msg => {
+                            addMessage(msg.sender, msg.content, msg.isPlayer1);
+                        });
+                    }
+                }
+            });
+        }
+    
+        function updateGameInfo() {
+            if(gameState.status === 'finished') {
+                stopTimer();
+                const winner = gameState.currentPlayer === '1' ? '2' : '1';
+                currentTurn.textContent = winner === gameState.mySymbol ? 
+                    'Game Over! You Win!' : 'Game Over! You Lose!';
+            } else if (gameState.status === 'ready') {
+                currentTurn.textContent = "Waiting for game to start...";
+            } else if (gameState.status === 'playing') {
+                centerToggle.disabled = true;
+                currentTurn.textContent = gameState.currentPlayer === gameState.mySymbol ? 
+                    'Your turn' : "Opponent's turn";
+            }
+        }
+    
+        function checkWinner(board, row, col) {
+            const directions = [
+                [0, 1], [1, 0], [1, 1], [1, -1]
+            ];
+    
+            const index = row * BOARD_COLS + col;
+            const symbol = board[index];
+    
+            for(const [dx, dy] of directions) {
+                let count = 1;
+                
+                // Check forward
+                for(let i = 1; i < 5; i++) {
+                    const newRow = row + dx * i;
+                    const newCol = col + dy * i;
+                    if(!isValidPosition(newRow, newCol)) break;
+                    if(board[newRow * BOARD_COLS + newCol] !== symbol) break;
+                    count++;
+                }
+                
+                // Check backward
+                for(let i = 1; i < 5; i++) {
+                    const newRow = row - dx * i;
+                    const newCol = col - dy * i;
+                    if(!isValidPosition(newRow, newCol)) break;
+                    if(board[newRow * BOARD_COLS + newCol] !== symbol) break;
+                    count++;
+                }
+    
+                if(count >= 5) return true;
+            }
+            return false;
+        }
+    
+        function isValidPosition(row, col) {
+            return row >= 0 && row < BOARD_ROWS && col >= 0 && col < BOARD_COLS;
+        }
+    
+        function addMessage(sender, content, isPlayer1) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isPlayer1 ? 'player1' : 'player2'}`;
+            messageDiv.innerHTML = `
+                <div class="sender">${sender}</div>
+                <div class="content">${content}</div>
+            `;
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        }
+    
+        document.getElementById('sendMessage').addEventListener('click', async () => {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message && gameState.gameId) {
+                try {
+                    await setDoc(doc(db, 'games', gameState.gameId), {
+                        messages: arrayUnion({
+                            sender: gameState.user.name,
+                            content: message,
+                            isPlayer1: gameState.mySymbol === '1',
+                            timestamp: Date.now()
+                        })
+                    }, { merge: true });
+                    
+                    input.value = '';
+                } catch (error) {
+                    console.error("Error sending message:", error);
+                }
+            }
+        });
+    
+        initializeBoard();
     </script>
-  </body>
+</body>
 </html>
