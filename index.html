@@ -467,14 +467,85 @@
       }
 
       // Game Board Initialization
+      //   function initializeBoard() {
+      //     gameBoard.innerHTML = ""; // Clear current board
+      //     for (let row = 0; row < BOARD_SIZE.ROWS; row++) {
+      //       for (let col = 0; col < BOARD_SIZE.COLS; col++) {
+      //         const cell = document.createElement("div");
+      //         cell.classList.add("cell");
+      //         cell.dataset.row = row;
+      //         cell.dataset.col = col;
+
+      //         const index = row * BOARD_SIZE.COLS + col;
+      //         if (gameState.board[index] === "1") {
+      //           cell.classList.add("player1");
+      //         } else if (gameState.board[index] === "2") {
+      //           cell.classList.add("player2");
+      //         }
+
+      //         if (row === CENTER.ROW && col === CENTER.COL) {
+      //           cell.classList.add("center");
+      //         }
+
+      //         cell.addEventListener("click", handleCellClick);
+      //         gameBoard.appendChild(cell);
+      //       }
+      //     }
+
+      //     // Update symbol display
+      //     playerSymbolDisplay.textContent =
+      //       gameState.playerSymbol === "1" ? "X" : "O";
+      //   }
+
+      // Game Board Initialization
+      // function initializeBoard() {
+      //   gameBoard.innerHTML = "";
+      //   for (let row = 0; row < BOARD_SIZE.ROWS; row++) {
+      //     for (let col = 0; col < BOARD_SIZE.COLS; col++) {
+      //       const cell = document.createElement("div");
+      //       cell.classList.add("cell");
+      //       cell.dataset.row = row;
+      //       cell.dataset.col = col;
+
+      //       // Tính số cho tất cả các ô (bao gồm cả ô trung tâm)
+      //       const cellNumber = document.createElement("span");
+      //       cellNumber.classList.add("cell-number");
+      //       cellNumber.textContent = row + 1 + (col * BOARD_SIZE.ROWS);
+      //       cell.appendChild(cellNumber);
+
+      //       const index = row * BOARD_SIZE.COLS + col;
+      //       if (gameState.board[index] === "1") {
+      //         cell.classList.add("player1");
+      //       } else if (gameState.board[index] === "2") {
+      //         cell.classList.add("player2");
+      //       }
+
+      //       // Ô trung tâm
+      //       if (row === CENTER.ROW && col === CENTER.COL) {
+      //         cell.classList.add("center");
+      //         cell.classList.add("disabled"); // Thêm class disabled để vô hiệu hóa
+      //       }
+
+      //       cell.addEventListener("click", handleCellClick);
+      //       gameBoard.appendChild(cell);
+      //     }
+      //   }
+      // }
+      // Game Board Initialization
       function initializeBoard() {
-        gameBoard.innerHTML = ""; // Clear current board
+        gameBoard.innerHTML = "";
         for (let row = 0; row < BOARD_SIZE.ROWS; row++) {
           for (let col = 0; col < BOARD_SIZE.COLS; col++) {
             const cell = document.createElement("div");
             cell.classList.add("cell");
             cell.dataset.row = row;
             cell.dataset.col = col;
+
+            // Tính số theo chiều dòng ngang
+            const cellNumber = document.createElement("span");
+            cellNumber.classList.add("cell-number");
+            cellNumber.textContent = row * 20 + (col + 1);
+            cell.appendChild(cellNumber);
 
             const index = row * BOARD_SIZE.COLS + col;
             if (gameState.board[index] === "1") {
@@ -483,18 +554,16 @@
               cell.classList.add("player2");
             }
 
+            // Ô trung tâm
             if (row === CENTER.ROW && col === CENTER.COL) {
               cell.classList.add("center");
+              cell.classList.add("disabled"); // Thêm class disabled để vô hiệu hóa
             }
 
             cell.addEventListener("click", handleCellClick);
             gameBoard.appendChild(cell);
           }
         }
-
-        // Update symbol display
-        playerSymbolDisplay.textContent =
-          gameState.playerSymbol === "1" ? "X" : "O";
       }
 
       // Helper Functions
@@ -549,7 +618,11 @@
           }
         });
       }
-
+      // Sửa lại hàm calculateCellNumber để đánh số theo cột
+      function calculateCellNumber(row, col) {
+        // Số bắt đầu của mỗi cột = col * BOARD_ROWS + 1
+        return row + 1 + col * BOARD_ROWS;
+      }
       // Initialize
       initializeChat();
 
@@ -754,6 +827,18 @@
         gameState.timeRemaining = roomData.timeRemaining;
         gameState.lastMove = roomData.lastMove;
 
+        // Thêm xử lý highlight các ô thắng
+        if (roomData.winningCells && roomData.winningCells.length > 0) {
+          roomData.winningCells.forEach(({ row, col }) => {
+            const cell = document.querySelector(
+              `[data-row="${row}"][data-col="${col}"]`
+            );
+            if (cell) {
+              cell.classList.add("winning-cell");
+            }
+          });
+        }
+
         if (gameState.isHost) {
           gameState.isReady = roomData.player1Ready;
         } else {
@@ -823,7 +908,6 @@
         .getElementById("kickPlayer")
         ?.addEventListener("click", kickPlayer);
 
-        
       function updateGameBoard() {
         const cells = document.querySelectorAll(".cell");
         cells.forEach((cell, index) => {
@@ -901,92 +985,397 @@
           console.error("Error handling timeout:", error);
         }
       }
+      //   // Game Mechanics - Cell Click Handler
+      //   async function handleCellClick(event) {
+      //     if (
+      //       gameState.gameStatus !== "playing" ||
+      //       gameState.currentPlayer !== gameState.playerSymbol
+      //     ) {
+      //       return;
+      //     }
+
+      //     const cell = event.target;
+      //     const row = parseInt(cell.dataset.row);
+      //     const col = parseInt(cell.dataset.col);
+      //     const index = row * BOARD_SIZE.COLS + col;
+
+      //     // Check if cell is already occupied
+      //     if (gameState.board[index]) return;
+
+      //     // Validate first move
+      //     if (gameState.moveCount === 0 && !isValidFirstMove(row, col)) {
+      //       alert("First move must be adjacent to the center");
+      //       return;
+      //     }
+
+      //     try {
+      //       const newBoard = [...gameState.board];
+      //       newBoard[index] = gameState.playerSymbol;
+
+      //       const hasWon = checkWinner(newBoard, row, col);
+
+      //       await updateDoc(doc(db, "rooms", gameState.roomId), {
+      //         board: newBoard,
+      //         currentPlayer: gameState.playerSymbol === "1" ? "2" : "1",
+      //         status: hasWon ? "finished" : "playing",
+      //         lastMove: { row, col },
+      //         timeRemaining: TIMER_DURATION,
+      //         moveCount: gameState.moveCount + 1,
+      //         winner: hasWon ? gameState.playerSymbol : null,
+      //       });
+
+      //       if (hasWon) {
+      //         stopTimer();
+      //       }
+      //     } catch (error) {
+      //       console.error("Error making move:", error);
+      //       alert("Failed to make move. Please try again.");
+      //     }
+      //   }
       // Game Mechanics - Cell Click Handler
-      async function handleCellClick(event) {
-        if (
-          gameState.gameStatus !== "playing" ||
-          gameState.currentPlayer !== gameState.playerSymbol
-        ) {
-          return;
-        }
+      // async function handleCellClick(event) {
+      //   if (
+      //     gameState.gameStatus !== "playing" ||
+      //     gameState.currentPlayer !== gameState.playerSymbol
+      //   ) {
+      //     return;
+      //   }
 
-        const cell = event.target;
-        const row = parseInt(cell.dataset.row);
-        const col = parseInt(cell.dataset.col);
-        const index = row * BOARD_SIZE.COLS + col;
+      //   // Sử dụng closest để đảm bảo bắt đúng cell khi click vào số
+      //   const cell = event.target.closest(".cell");
+      //   if (!cell) return;
 
-        // Check if cell is already occupied
-        if (gameState.board[index]) return;
+      //   const row = parseInt(cell.dataset.row);
+      //   const col = parseInt(cell.dataset.col);
 
-        // Validate first move
-        if (gameState.moveCount === 0 && !isValidFirstMove(row, col)) {
-          alert("First move must be adjacent to the center");
-          return;
-        }
+      //   // Chặn click vào ô trung tâm
+      //   if (row === CENTER.ROW && col === CENTER.COL) {
+      //     return;
+      //   }
 
-        try {
-          const newBoard = [...gameState.board];
-          newBoard[index] = gameState.playerSymbol;
+      //   const index = row * BOARD_SIZE.COLS + col;
 
-          const hasWon = checkWinner(newBoard, row, col);
+      //   // Check if cell is already occupied
+      //   if (gameState.board[index]) return;
 
-          await updateDoc(doc(db, "rooms", gameState.roomId), {
-            board: newBoard,
-            currentPlayer: gameState.playerSymbol === "1" ? "2" : "1",
-            status: hasWon ? "finished" : "playing",
-            lastMove: { row, col },
-            timeRemaining: TIMER_DURATION,
-            moveCount: gameState.moveCount + 1,
-            winner: hasWon ? gameState.playerSymbol : null,
-          });
+      //   // Validate first move
+      //   if (gameState.moveCount === 0 && !isValidFirstMove(row, col)) {
+      //     alert("First move must be adjacent to the center");
+      //     return;
+      //   }
 
-          if (hasWon) {
-            stopTimer();
-          }
-        } catch (error) {
-          console.error("Error making move:", error);
-          alert("Failed to make move. Please try again.");
-        }
-      }
+      //   try {
+      //     const newBoard = [...gameState.board];
+      //     newBoard[index] = gameState.playerSymbol;
 
+      //     const hasWon = checkWinner(newBoard, row, col);
+
+      //     await updateDoc(doc(db, "rooms", gameState.roomId), {
+      //       board: newBoard,
+      //       currentPlayer: gameState.playerSymbol === "1" ? "2" : "1",
+      //       status: hasWon ? "finished" : "playing",
+      //       lastMove: { row, col },
+      //       timeRemaining: TIMER_DURATION,
+      //       moveCount: gameState.moveCount + 1,
+      //       winner: hasWon ? gameState.playerSymbol : null,
+      //     });
+
+      //     if (hasWon) {
+      //       stopTimer();
+      //     }
+      //   } catch (error) {
+      //     console.error("Error making move:", error);
+      //     alert("Failed to make move. Please try again.");
+      //   }
+      // }
+//       async function handleCellClick(event) {
+//   if (
+//     gameState.gameStatus !== "playing" ||
+//     gameState.currentPlayer !== gameState.playerSymbol
+//   ) {
+//     return;
+//   }
+
+//   // Sử dụng closest để đảm bảo bắt đúng cell khi click vào số
+//   const cell = event.target.closest('.cell');
+//   if (!cell) return;
+
+//   const row = parseInt(cell.dataset.row);
+//   const col = parseInt(cell.dataset.col);
+  
+//   // Chặn click vào ô trung tâm
+//   if (row === CENTER.ROW && col === CENTER.COL) {
+//     return;
+//   }
+
+//   const index = row * BOARD_SIZE.COLS + col;
+
+//   // Check if cell is already occupied
+//   if (gameState.board[index]) return;
+
+//   // Validate first move
+//   if (gameState.moveCount === 0 && !isValidFirstMove(row, col)) {
+//     alert("First move must be adjacent to the center");
+//     return;
+//   }
+
+//   try {
+//     const newBoard = [...gameState.board];
+//     newBoard[index] = gameState.playerSymbol;
+
+//     // Lấy kết quả chi tiết từ checkWinner
+//     const winResult = checkWinner(newBoard, row, col);
+
+//     await updateDoc(doc(db, "rooms", gameState.roomId), {
+//       board: newBoard,
+//       currentPlayer: gameState.playerSymbol === "1" ? "2" : "1",
+//       status: winResult ? "finished" : "playing",
+//       lastMove: { row, col },
+//       timeRemaining: TIMER_DURATION,
+//       moveCount: gameState.moveCount + 1,
+//       winner: winResult ? gameState.playerSymbol : null,
+//       // Thêm thông tin về các ô thắng
+//       winningCells: winResult ? winResult.winningCells : []
+//     });
+
+//     if (winResult) {
+//       stopTimer();
+//       // Highlight các ô thắng ngay sau khi đánh
+//       document.querySelectorAll('.winning-cell').forEach(cell => cell.classList.remove('winning-cell'));
+//       winResult.winningCells.forEach(({row, col}) => {
+//         const winCell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+//         if (winCell) {
+//           winCell.classList.add('winning-cell');
+//         }
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error making move:", error);
+//     alert("Failed to make move. Please try again.");
+//   }
+// }
+
+async function handleCellClick(event) {
+  if (
+    gameState.gameStatus !== "playing" ||
+    gameState.currentPlayer !== gameState.playerSymbol
+  ) {
+    return;
+  }
+
+  // Sử dụng closest để đảm bảo bắt đúng cell khi click vào số
+  const cell = event.target.closest('.cell');
+  if (!cell) return;
+
+  const row = parseInt(cell.dataset.row);
+  const col = parseInt(cell.dataset.col);
+  
+  // Chặn click vào ô trung tâm
+  if (row === CENTER.ROW && col === CENTER.COL) {
+    return;
+  }
+
+  const index = row * BOARD_SIZE.COLS + col;
+
+  // Check if cell is already occupied
+  if (gameState.board[index]) return;
+
+  // Validate first move
+  if (gameState.moveCount === 0 && !isValidFirstMove(row, col)) {
+    alert("First move must be adjacent to the center");
+    return;
+  }
+
+  try {
+    const newBoard = [...gameState.board];
+    newBoard[index] = gameState.playerSymbol;
+
+    const winResult = checkWinner(newBoard, row, col);
+
+    await updateDoc(doc(db, "rooms", gameState.roomId), {
+      board: newBoard,
+      currentPlayer: gameState.playerSymbol === "1" ? "2" : "1",
+      status: winResult.hasWon ? "finished" : "playing",
+      lastMove: { row, col },
+      timeRemaining: TIMER_DURATION,
+      moveCount: gameState.moveCount + 1,
+      winner: winResult.hasWon ? gameState.playerSymbol : null,
+      winningCells: winResult.winningCells
+    });
+
+    if (winResult.hasWon) {
+      stopTimer();
+    }
+  } catch (error) {
+    console.error("Error making move:", error);
+    alert("Failed to make move. Please try again.");
+  }
+}
       // Win Condition Checking
+      //   function checkWinner(board, lastRow, lastCol) {
+      //     const directions = [
+      //       [1, 0], // vertical
+      //       [0, 1], // horizontal
+      //       [1, 1], // diagonal
+      //       [1, -1], // anti-diagonal
+      //     ];
+
+      //     const symbol = board[lastRow * BOARD_SIZE.COLS + lastCol];
+
+      //     for (const [dx, dy] of directions) {
+      //       let count = 1;
+
+      //       // Check forward direction
+      //       for (let i = 1; i < 5; i++) {
+      //         const newRow = lastRow + dx * i;
+      //         const newCol = lastCol + dy * i;
+      //         if (!isValidPosition(newRow, newCol)) break;
+      //         if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
+      //         count++;
+      //       }
+
+      //       // Check backward direction
+      //       for (let i = 1; i < 5; i++) {
+      //         const newRow = lastRow - dx * i;
+      //         const newCol = lastCol - dy * i;
+      //         if (!isValidPosition(newRow, newCol)) break;
+      //         if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
+      //         count++;
+      //       }
+
+      //       if (count >= 5) return true;
+      //     }
+
+      //     return false;
+      //   }
+      // function checkWinner(board, lastRow, lastCol) {
+      //   const directions = [
+      //     [1, 0], // vertical
+      //     [0, 1], // horizontal
+      //     [1, 1], // diagonal
+      //     [1, -1], // anti-diagonal
+      //   ];
+
+      //   const symbol = board[lastRow * BOARD_SIZE.COLS + lastCol];
+      //   const winningCells = [];
+
+      //   for (const [dx, dy] of directions) {
+      //     let count = 1;
+      //     const tempCells = [{ row: lastRow, col: lastCol }];
+
+      //     // Check forward direction
+      //     for (let i = 1; i < 5; i++) {
+      //       const newRow = lastRow + dx * i;
+      //       const newCol = lastCol + dy * i;
+      //       if (!isValidPosition(newRow, newCol)) break;
+      //       if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
+      //       tempCells.push({ row: newRow, col: newCol });
+      //       count++;
+      //     }
+
+      //     // Check backward direction
+      //     for (let i = 1; i < 5; i++) {
+      //       const newRow = lastRow - dx * i;
+      //       const newCol = lastCol - dy * i;
+      //       if (!isValidPosition(newRow, newCol)) break;
+      //       if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
+      //       tempCells.push({ row: newRow, col: newCol });
+      //       count++;
+      //     }
+
+      //     if (count >= 5) {
+      //       winningCells.push(...tempCells);
+      //     }
+      //   }
+
+      //   // Nếu có cells thắng thì lưu lại và highlight chúng
+      //   if (winningCells.length > 0) {
+      //     const uniqueCells = Array.from(
+      //       new Set(winningCells.map((c) => `${c.row},${c.col}`))
+      //     ).map((str) => {
+      //       const [row, col] = str.split(",");
+      //       return { row: parseInt(row), col: parseInt(col) };
+      //     });
+
+      //     // Highlight các ô thắng
+      //     uniqueCells.forEach(({ row, col }) => {
+      //       const cell = document.querySelector(
+      //         `[data-row="${row}"][data-col="${col}"]`
+      //       );
+      //       if (cell) {
+      //         cell.classList.add("winning-cell");
+      //       }
+      //     });
+
+      //     return true;
+      //   }
+
+      //   return false;
+      // }
+
+      // const resetHighlights = () => {
+      //   document.querySelectorAll(".winning-cell").forEach((cell) => {
+      //     cell.classList.remove("winning-cell");
+      //   });
+      // };
       function checkWinner(board, lastRow, lastCol) {
-        const directions = [
-          [1, 0], // vertical
-          [0, 1], // horizontal
-          [1, 1], // diagonal
-          [1, -1], // anti-diagonal
-        ];
+  const directions = [
+    [1, 0],  // vertical
+    [0, 1],  // horizontal 
+    [1, 1],  // diagonal
+    [1, -1], // anti-diagonal
+  ];
 
-        const symbol = board[lastRow * BOARD_SIZE.COLS + lastCol];
+  const symbol = board[lastRow * BOARD_SIZE.COLS + lastCol];
+  const winningCells = [];
 
-        for (const [dx, dy] of directions) {
-          let count = 1;
+  for (const [dx, dy] of directions) {
+    let count = 1;
+    const tempCells = [{row: lastRow, col: lastCol}];
 
-          // Check forward direction
-          for (let i = 1; i < 5; i++) {
-            const newRow = lastRow + dx * i;
-            const newCol = lastCol + dy * i;
-            if (!isValidPosition(newRow, newCol)) break;
-            if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
-            count++;
-          }
+    // Check forward direction
+    for (let i = 1; i < 5; i++) {
+      const newRow = lastRow + dx * i;
+      const newCol = lastCol + dy * i;
+      if (!isValidPosition(newRow, newCol)) break;
+      if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
+      tempCells.push({row: newRow, col: newCol});
+      count++;
+    }
 
-          // Check backward direction
-          for (let i = 1; i < 5; i++) {
-            const newRow = lastRow - dx * i;
-            const newCol = lastCol - dy * i;
-            if (!isValidPosition(newRow, newCol)) break;
-            if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
-            count++;
-          }
+    // Check backward direction
+    for (let i = 1; i < 5; i++) {
+      const newRow = lastRow - dx * i;
+      const newCol = lastCol - dy * i;
+      if (!isValidPosition(newRow, newCol)) break;
+      if (board[newRow * BOARD_SIZE.COLS + newCol] !== symbol) break;
+      tempCells.push({row: newRow, col: newCol});
+      count++;
+    }
 
-          if (count >= 5) return true;
-        }
+    if (count >= 5) {
+      winningCells.push(...tempCells);
+    }
+  }
 
-        return false;
-      }
+  if (winningCells.length > 0) {
+    const uniqueCells = Array.from(new Set(winningCells.map(c => `${c.row},${c.col}`)))
+      .map(str => {
+        const [row, col] = str.split(',');
+        return {row: parseInt(row), col: parseInt(col)};
+      });
 
+    return {
+      hasWon: true,
+      winningCells: uniqueCells
+    };
+  }
+
+  return {
+    hasWon: false,
+    winningCells: []
+  };
+}
       // Chat System
       async function sendMessage() {
         const message = chatInput.value.trim();
@@ -1076,90 +1465,95 @@
       }
 
       // Game Over Handler
-    //   function handleGameOver(roomData) {
-    //     stopTimer();
-    //     const winner = roomData.winner;
-    //     const isWinner = winner === gameState.playerSymbol;
-    //     const isTimeout = roomData.timeoutPlayer;
+      //   function handleGameOver(roomData) {
+      //     stopTimer();
+      //     const winner = roomData.winner;
+      //     const isWinner = winner === gameState.playerSymbol;
+      //     const isTimeout = roomData.timeoutPlayer;
 
-    //     setTimeout(() => {
-    //       let message;
-    //       if (isTimeout) {
-    //         message =
-    //           roomData.timeoutPlayer === gameState.playerSymbol
-    //             ? "You lost by timeout!"
-    //             : "You won! (Opponent timeout)";
-    //       } else {
-    //         message = isWinner
-    //           ? "Congratulations! You won!"
-    //           : "Game Over. You lost!";
-    //       }
+      //     setTimeout(() => {
+      //       let message;
+      //       if (isTimeout) {
+      //         message =
+      //           roomData.timeoutPlayer === gameState.playerSymbol
+      //             ? "You lost by timeout!"
+      //             : "You won! (Opponent timeout)";
+      //       } else {
+      //         message = isWinner
+      //           ? "Congratulations! You won!"
+      //           : "Game Over. You lost!";
+      //       }
 
-    //       alert(message);
+      //       alert(message);
 
-    //       if (gameState.isHost) {
-    //         updateDoc(doc(db, "rooms", gameState.roomId), {
-    //           status: "waiting",
-    //           board: Array(BOARD_SIZE.ROWS * BOARD_SIZE.COLS).fill(""),
-    //           currentPlayer: "1",
-    //           player1Ready: false,
-    //           player2Ready: false,
-    //           moveCount: 0,
-    //           winner: null,
-    //           timeoutPlayer: null,
-    //           lastMove: null,
-    //         });
-    //       }
-    //     }, 500);
-    //   }
+      //       if (gameState.isHost) {
+      //         updateDoc(doc(db, "rooms", gameState.roomId), {
+      //           status: "waiting",
+      //           board: Array(BOARD_SIZE.ROWS * BOARD_SIZE.COLS).fill(""),
+      //           currentPlayer: "1",
+      //           player1Ready: false,
+      //           player2Ready: false,
+      //           moveCount: 0,
+      //           winner: null,
+      //           timeoutPlayer: null,
+      //           lastMove: null,
+      //         });
+      //       }
+      //     }, 500);
+      //   }
       // Game Over Handler
-function handleGameOver(roomData) {
-  stopTimer();
-  const winner = roomData.winner;
-  const isWinner = winner === gameState.playerSymbol;
-  const isTimeout = roomData.timeoutPlayer;
+      function handleGameOver(roomData) {
+        stopTimer();
+        const winner = roomData.winner;
+        const isWinner = winner === gameState.playerSymbol;
+        const isTimeout = roomData.timeoutPlayer;
 
-  setTimeout(() => {
-    let message;
-    if (isTimeout) {
-      message = roomData.timeoutPlayer === gameState.playerSymbol
-        ? "You lost by timeout!"
-        : "You won! (Opponent timeout)";
-    } else {
-      message = isWinner ? "Congratulations! You won!" : "Game Over. You lost!";
-    }
+        setTimeout(() => {
+          let message;
+          if (isTimeout) {
+            message =
+              roomData.timeoutPlayer === gameState.playerSymbol
+                ? "You lost by timeout!"
+                : "You won! (Opponent timeout)";
+          } else {
+            message = isWinner
+              ? "Congratulations! You won!"
+              : "Game Over. You lost!";
+          }
 
-    alert(message);
+          alert(message);
 
-    // Reset game state and return to room screen
-    if (gameState.isHost) {
-      updateDoc(doc(db, "rooms", gameState.roomId), {
-        status: "waiting",
-        board: Array(BOARD_SIZE.ROWS * BOARD_SIZE.COLS).fill(""),
-        currentPlayer: "1",
-        player1Ready: false,
-        player2Ready: false,
-        moveCount: 0,
-        winner: null,
-        timeoutPlayer: null,
-        lastMove: null,
-      });
-    }
+          // Reset game state and return to room screen
+          if (gameState.isHost) {
+            updateDoc(doc(db, "rooms", gameState.roomId), {
+              status: "waiting",
+              board: Array(BOARD_SIZE.ROWS * BOARD_SIZE.COLS).fill(""),
+              currentPlayer: "1",
+              player1Ready: false,
+              player2Ready: false,
+              moveCount: 0,
+              winner: null,
+              timeoutPlayer: null,
+              lastMove: null,
+            });
+          }
 
-    // Return both players to room screen
-    showScreen("room");
-    
-    // Reset ready button state
-    const readyBtn = document.getElementById("readyBtn");
-    readyBtn.textContent = "Ready";
-    gameState.isReady = false;
+          // Return both players to room screen
+          showScreen("room");
 
-    // Reset game board
-    const gameBoard = document.getElementById("gameBoard");
-    gameBoard.innerHTML = "";
+          // Reset ready button state
+          const readyBtn = document.getElementById("readyBtn");
+          readyBtn.textContent = "Ready";
+          gameState.isReady = false;
 
-  }, 500);
-}
+          // Reset game board
+          const gameBoard = document.getElementById("gameBoard");
+          gameBoard.innerHTML = "";
+
+          // Thêm dòng này để reset highlight
+          resetHighlights();
+        }, 500);
+      }
       // Additional Event Listeners
       surrenderBtn.addEventListener("click", async () => {
         try {
