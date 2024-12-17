@@ -1,0 +1,438 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #1a1b1e;
+    color: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Screen Container */
+.screen-container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Login Screen */
+.login-box {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    border-radius: 15px;
+    backdrop-filter: blur(4px);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-box h1 {
+    color: #5ee7ff;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.btn-google {
+    background: #db4437;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+/* User Info */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #5ee7ff;
+}
+
+/* Join/Create Section */
+.join-create-section {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.join-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.join-section h3 {
+    color: #5ee7ff;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.join-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.room-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    text-transform: uppercase;
+}
+
+/* Button Styles */
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: #5ee7ff;
+    color: #1a1b1e;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Room Screen */
+.room-container {
+    display: flex;
+    gap: 20px;
+    max-width: 800px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+}
+
+.room-info {
+    flex: 1;
+}
+
+.room-header {
+    margin-bottom: 20px;
+}
+
+.room-header h2 {
+    color: #5ee7ff;
+    margin-bottom: 10px;
+}
+
+.room-id {
+    background: rgba(94, 231, 255, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 1.2em;
+}
+
+/* Player Cards */
+.player-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.player-status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    margin-left: auto;
+}
+
+.status-waiting {
+    background: #ffd700;
+    color: #000;
+}
+
+.status-ready {
+    background: #00ff00;
+    color: #000;
+}
+
+/* Game Screen */
+.game-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    align-items: flex-start;
+}
+
+.game-info {
+    width: 250px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.game-info h2 {
+    color: #5ee7ff;
+    margin-bottom: 20px;
+}
+
+.turn-info, .timer {
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+/* Game Board */
+.game-board-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(19, 35px);
+    grid-template-rows: repeat(17, 35px);
+    gap: 1px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(94, 231, 255, 0.1);
+}
+
+/* Cell Styles */
+.cell {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #0066cc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: white;
+    transition: background-color 0.2s;
+}
+
+.cell::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.cell.player1::after {
+    content: "X";
+    color: blue;
+}
+
+.cell.player2::after {
+    content: "O";
+    color: red;
+}
+
+.cell.center {
+    background: #f8f9fa;
+}
+
+.cell.valid-first-move {
+    background: rgba(94, 231, 255, 0.1);
+    animation: pulse-subtle 2s infinite;
+}
+
+.cell:hover:not(.player1):not(.player2) {
+    background: rgba(94, 231, 255, 0.1);
+}
+
+.cell.last-move {
+    background: rgba(94, 231, 255, 0.2);
+}
+
+/* Chat Container */
+.chat-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+}
+
+.chat-header {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-toggle {
+    background: none;
+    border: none;
+    color: #5ee7ff;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.chat-message {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-message.player1 .message-sender {
+    color: #5ee7ff;
+}
+
+.chat-message.player2 .message-sender {
+    color: #ff5e5e;
+}
+
+.chat-input-container {
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.chat-send {
+    padding: 8px 15px;
+    background: #5ee7ff;
+    color: #1a1b1e;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Timer & Game Info Styles */
+.player-info {
+    margin-bottom: 20px;
+}
+
+.active-players {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.player-symbol {
+    font-size: 1.1em;
+    color: #5ee7ff;
+}
+
+.timer {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #5ee7ff;
+    text-align: center;
+    margin: 10px 0;
+}
+
+/* Countdown Styles */
+.countdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.countdown-number {
+    font-size: 120px;
+    color: #5ee7ff;
+    animation: pulse 1s infinite;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pulse-subtle {
+    0% { background: rgba(94, 231, 255, 0.1); }
+    50% { background: rgba(94, 231, 255, 0.2); }
+    100% { background: rgba(94, 231, 255, 0.1); }
+}
+
+
+.kick-btn {
+    padding: 5px 10px;
+    margin-left: 10px;
+    font-size: 0.8em;
+}
